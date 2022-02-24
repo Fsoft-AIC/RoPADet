@@ -6,6 +6,7 @@
 import math
 from dataclasses import dataclass
 
+import torch
 import torch.nn.functional as F
 from fairseq import metrics, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
@@ -49,12 +50,19 @@ class CrossEntropyCriterion(FairseqCriterion):
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
+        # print(target, target.dtype, target.shape)
+        # print(lprobs, lprobs.dtype, lprobs.shape)
+        # print(self.padding_idx)
+        # target = target.type(torch.LongTensor).cuda()
+        # loss = F.binary_cross_entropy(lprobs.squeeze(dim=1), target, reduction='sum' if reduce else 'none')
         loss = F.nll_loss(
             lprobs,
             target,
-            ignore_index=self.padding_idx,
+            # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
+            weight=torch.tensor([1.0, 5.0]).to('cuda'),
         )
+        # print(loss)
         return loss, loss
 
     @staticmethod

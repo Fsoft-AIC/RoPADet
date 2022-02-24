@@ -11,6 +11,7 @@ import argparse
 import glob
 import os
 import random
+import numpy as np
 
 import soundfile
 
@@ -72,10 +73,11 @@ def main(args):
             if args.path_must_contain and args.path_must_contain not in file_path:
                 continue
 
-            frames = soundfile.info(fname).frames
+            # frames = soundfile.info(fname).frames
+            mels, frames = np.load(fname).shape
             dest = train_f if rand.random() > args.valid_percent else valid_f
             print(
-                "{}\t{}".format(os.path.relpath(file_path, dir_path), frames), file=dest
+                "{}\t{}\t{}".format(os.path.relpath(file_path, dir_path), mels, frames), file=dest
             )
     if valid_f is not None:
         valid_f.close()

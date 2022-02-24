@@ -1,49 +1,53 @@
 # @package _group_
 
 common:
-  fp16: true
+  fp16: false
   log_format: json
   log_interval: 200
+  wandb_project: wav2vec2_covid
 
 checkpoint:
-  save_interval: 50
+  save_interval: 1
   save_interval_updates: 1000
   keep_interval_updates: 1
   no_epoch_checkpoints: true
-  best_checkpoint_metric: wer
+  best_checkpoint_metric: loss
 
 task:
   _name: audio_finetuning
   data: ???
   normalize: false
-  labels: ltr
+  labels: label
 
 dataset:
-  num_workers: 6
-  max_tokens: 3200000
+  num_workers: 16
+  max_tokens: 1280
+  batch_size: 128
   skip_invalid_size_inputs_valid_test: true
-  validate_after_updates: 10000
-  validate_interval: 1000
-  valid_subset: dev_other
+  # validate_after_updates: 50
+  # validate_interval: 1000
+  valid_subset: valid
 
 distributed_training:
   ddp_backend: legacy_ddp
-  distributed_world_size: 2
+  distributed_world_size: 4
 
 criterion:
-  _name: ctc
-  zero_infinity: true
+  _name: cross_entropy
+  # zero_infinity: true
 
 optimization:
   max_update: 13000
-  lr: [0.00005]
+  lr: [1e-4]
   sentence_avg: true
   update_freq: [4]
+  max_epoch: 100
 
 optimizer:
   _name: adam
   adam_betas: (0.9,0.98)
   adam_eps: 1e-08
+  weight_decay: 4e-3
 
 lr_scheduler:
   _name: tri_stage
@@ -51,13 +55,15 @@ lr_scheduler:
   final_lr_scale: 0.05
 
 model:
-  _name: wav2vec_ctc
+  _name: wav2vec_seq2seq
   w2v_path: ???
+  no_pretrained_weights: true
   apply_mask: true
-  mask_prob: 0.65
+  mask_prob: 0.3
   mask_channel_prob: 0.25
-  mask_channel_length: 64
+  mask_channel_length: 32
   layerdrop: 0.1
   activation_dropout: 0.1
-  feature_grad_mult: 0.0
-  freeze_finetune_updates: 10000
+  feature_grad_mult: 1
+  freeze_finetune_updates: 0
+  final_dropout: 0.1

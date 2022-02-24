@@ -296,21 +296,24 @@ class Wav2Vec2Model(BaseFairseqModel):
         super().__init__()
         self.cfg = cfg
 
-        feature_enc_layers = eval(cfg.conv_feature_layers)
-        self.embed = feature_enc_layers[-1][0]
+        # TODO: modify here
 
-        self.feature_extractor = ConvFeatureExtractionModel(
-            conv_layers=feature_enc_layers,
-            dropout=0.0,
-            mode=cfg.extractor_mode,
-            conv_bias=cfg.conv_bias,
-        )
+        # feature_enc_layers = eval(cfg.conv_feature_layers)
+        # self.embed = feature_enc_layers[-1][0]
+        self.embed = 128
 
-        self.post_extract_proj = (
-            nn.Linear(self.embed, cfg.encoder_embed_dim)
-            if self.embed != cfg.encoder_embed_dim and not cfg.quantize_input
-            else None
-        )
+        # self.feature_extractor = ConvFeatureExtractionModel(
+        #     conv_layers=feature_enc_layers,
+        #     dropout=0.0,
+        #     mode=cfg.extractor_mode,
+        #     conv_bias=cfg.conv_bias,
+        # )
+
+        # self.post_extract_proj = (
+        #     nn.Linear(self.embed, cfg.encoder_embed_dim)
+        #     if self.embed != cfg.encoder_embed_dim and not cfg.quantize_input
+        #     else None
+        # )
 
         self.crop_seq_to_multiple = cfg.crop_seq_to_multiple
 
@@ -390,7 +393,7 @@ class Wav2Vec2Model(BaseFairseqModel):
             encoder_cls = ConformerEncoder
 
         self.encoder = encoder_cls(cfg)
-        self.layer_norm = LayerNorm(self.embed)
+        # self.layer_norm = LayerNorm(self.embed)
 
         self.target_glu = None
         if cfg.target_glu:
@@ -590,40 +593,53 @@ class Wav2Vec2Model(BaseFairseqModel):
         padding_count=None,
     ):
 
-        if self.feature_grad_mult > 0:
-            features = self.feature_extractor(source)
-            if self.feature_grad_mult != 1.0:
-                features = GradMultiply.apply(features, self.feature_grad_mult)
-        else:
-            with torch.no_grad():
-                features = self.feature_extractor(source)
+        # if self.feature_grad_mult > 0:
+        #     features = self.feature_extractor(source)
+        #     if self.feature_grad_mult != 1.0:
+        #         features = GradMultiply.apply(features, self.feature_grad_mult)
+        # else:
+        #     with torch.no_grad():
+        #         features = self.feature_extractor(source)
+
+        features = source
 
         features_pen = features.float().pow(2).mean()
 
         features = features.transpose(1, 2)
-        features = self.layer_norm(features)
+        # features = self.layer_norm(features)
         unmasked_features = features.clone()
 
         if padding_mask is not None and padding_mask.any():
-            input_lengths = (1 - padding_mask.long()).sum(-1)
-            # apply conv formula to get real output_lengths
-            output_lengths = self._get_feat_extract_output_lengths(input_lengths)
+            padding_mask = padding_mask.transpose(1, 2)
+            padding_mask = padding_mask[:, :, 0].squeeze()
+            # print(padding_mask[1, :, :].shape)
+            # np.savetxt('padding_mask_tensor.txt', padding_mask[1, :, :].cpu())
+        #     print(padding_mask.shape)
+        #     input_lengths = (1 - padding_mask.long()).sum(-1)
+        #     # apply conv formula to get real output_lengths
+        #     output_lengths = self._get_feat_extract_output_lengths(input_lengths)
+        #     print(input_lengths.shape, output_lengths.shape, features.shape)
 
-            padding_mask = torch.zeros(
-                features.shape[:2], dtype=features.dtype, device=features.device
-            )
+        #     padding_mask = torch.zeros(
+        #         features.shape[:2], dtype=features.dtype, device=features.device
+        #     )
 
-            # these two operations makes sure that all values
-            # before the output lengths indices are attended to
-            padding_mask[
-                (
-                    torch.arange(padding_mask.shape[0], device=padding_mask.device),
-                    output_lengths - 1,
-                )
-            ] = 1
-            padding_mask = (1 - padding_mask.flip([-1]).cumsum(-1).flip([-1])).bool()
+        #     print(( 
+        #             torch.arange(padding_mask.shape[0], device=padding_mask.device),
+        #             output_lengths - 1,
+        #         ))
+        #     # these two operations makes sure that all values
+        #     # before the output lengths indices are attended to
+        #     padding_mask[
+        #         ( 
+        #             torch.arange(padding_mask.shape[0], device=padding_mask.device),
+        #             output_lengths - 1,
+        #         )
+        #     ] = 1
+        #     padding_mask = (1 - padding_mask.flip([-1]).cumsum(-1).flip([-1])).bool()
         else:
             padding_mask = None
+
 
         time_steps_to_drop = features.size(1) % self.crop_seq_to_multiple
         if time_steps_to_drop != 0:
@@ -632,8 +648,8 @@ class Wav2Vec2Model(BaseFairseqModel):
             if padding_mask is not None:
                 padding_mask = padding_mask[:, :-time_steps_to_drop]
 
-        if self.post_extract_proj is not None:
-            features = self.post_extract_proj(features)
+        # if self.post_extract_proj is not None:
+        #     features = self.post_extract_proj(features)
 
         features = self.dropout_input(features)
         unmasked_features = self.dropout_features(unmasked_features)
@@ -653,12 +669,16 @@ class Wav2Vec2Model(BaseFairseqModel):
             features = self.project_inp(features)
 
         if mask:
+            # print(mask_indices)
             x, mask_indices = self.apply_mask(
                 features,
                 padding_mask,
                 mask_indices=mask_indices,
                 mask_channel_indices=mask_channel_indices,
             )
+            # print(mask_indices.shape)
+            # unique, counts = np.unique(mask_indices.cpu().numpy(), return_counts=True)
+            # print(dict(zip(unique, counts)))
             if not is_xla_tensor(x) and mask_indices is not None:
                 # tpu-comment: reducing the size in a dynamic way causes
                 # too many recompilations on xla.
@@ -769,9 +789,9 @@ class Wav2Vec2Model(BaseFairseqModel):
 
     def quantize(self, x):
         assert self.quantizer is not None
-        x = self.feature_extractor(x)
+        # x = self.feature_extractor(x)
         x = x.transpose(1, 2)
-        x = self.layer_norm(x)
+        # x = self.layer_norm(x)
         return self.quantizer.forward_idx(x)
 
     def extract_features(self, source, padding_mask, mask=False, layer=None):
@@ -815,7 +835,7 @@ class Wav2Vec2Model(BaseFairseqModel):
                 l for i, l in enumerate(self.encoder.layers) if i <= last_layer
             )
 
-
+# TODO: Modify here
 class ConvFeatureExtractionModel(nn.Module):
     def __init__(
         self,
@@ -887,12 +907,13 @@ class ConvFeatureExtractionModel(nn.Module):
             in_d = dim
 
     def forward(self, x):
+        # print(x.shape)
 
-        # BxT -> BxCxT
-        x = x.unsqueeze(1)
+        # # BxT -> BxCxT
+        # x = x.unsqueeze(1)
 
-        for conv in self.conv_layers:
-            x = conv(x)
+        # for conv in self.conv_layers:
+        #     x = conv(x)
 
         return x
 

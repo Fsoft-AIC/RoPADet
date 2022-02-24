@@ -397,7 +397,7 @@ def compute_mask_indices(
     mask_length: int,
     mask_type: str = "static",
     mask_other: float = 0.0,
-    min_masks: int = 0,
+    min_masks: int = 2,
     no_overlap: bool = False,
     min_space: int = 0,
     require_same_masks: bool = True,

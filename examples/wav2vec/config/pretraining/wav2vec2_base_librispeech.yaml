@@ -11,15 +11,17 @@ checkpoint:
   no_epoch_checkpoints: true
 
 task:
-  _name: audio_pretraining
+  _name: stft_audio_pretraining
   data: ???
-  max_sample_size: 250000
-  min_sample_size: 32000
+  max_sample_size: 48000
+  min_sample_size: 16000
+  num_mels: 128
   normalize: false
 
 dataset:
   num_workers: 6
   max_tokens: 1400000
+  batch_size: 64
   skip_invalid_size_inputs_valid_test: true
 
 distributed_training:
@@ -34,7 +36,8 @@ criterion:
 
 optimization:
   max_update: 400000
-  lr: [0.0005]
+  lr: [0.0002]
+  update_freq: [16]
 
 optimizer:
   _name: adam
@@ -49,9 +52,13 @@ lr_scheduler:
 model:
   _name: wav2vec2
   quantize_targets: true
-  final_dim: 256
+  final_dim: 128
   encoder_layerdrop: 0.05
   dropout_input: 0.1
   dropout_features: 0.1
   feature_grad_mult: 0.1
-  encoder_embed_dim: 768
+  encoder_embed_dim: 128
+  encoder_ffn_embed_dim: 512
+  encoder_layers: 2
+  encoder_attention_heads: 2
+  conv_feature_layers: "[(512, 10, 8)] + [(512, 8, 5)] + [(512,5,3)]"

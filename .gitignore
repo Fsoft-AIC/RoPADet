@@ -139,3 +139,5 @@ wandb/
 nohup.out
 multirun
 outputs
+
+data/
