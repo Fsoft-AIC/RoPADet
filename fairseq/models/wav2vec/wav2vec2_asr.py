@@ -348,7 +348,7 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
             torch.nn.Tanh(),
             torch.nn.Dropout(p=0.1),
             torch.nn.Linear(32, 2),
-            torch.nn.Softmax()
+            # torch.nn.Softmax()
         )
         return model
 

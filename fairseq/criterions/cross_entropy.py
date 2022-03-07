@@ -60,9 +60,9 @@ class CrossEntropyCriterion(FairseqCriterion):
             target,
             # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
-            weight=torch.tensor([1.0, 5.0]).to('cuda'),
-        )
+            weight=torch.tensor([1.0, 10.0]).to('cuda'),
         # print(loss)
+        )
         return loss, loss
 
     @staticmethod

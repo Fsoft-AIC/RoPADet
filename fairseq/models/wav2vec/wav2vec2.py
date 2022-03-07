@@ -298,22 +298,22 @@ class Wav2Vec2Model(BaseFairseqModel):
 
         # TODO: modify here
 
-        # feature_enc_layers = eval(cfg.conv_feature_layers)
-        # self.embed = feature_enc_layers[-1][0]
-        self.embed = 128
+        feature_enc_layers = eval(cfg.conv_feature_layers)
+        self.embed = feature_enc_layers[-1][0]
+        # self.embed = 128
 
-        # self.feature_extractor = ConvFeatureExtractionModel(
-        #     conv_layers=feature_enc_layers,
-        #     dropout=0.0,
-        #     mode=cfg.extractor_mode,
-        #     conv_bias=cfg.conv_bias,
-        # )
+        self.feature_extractor = ConvFeatureExtractionModel(
+            conv_layers=feature_enc_layers,
+            dropout=0.0,
+            mode=cfg.extractor_mode,
+            conv_bias=cfg.conv_bias,
+        )
 
-        # self.post_extract_proj = (
-        #     nn.Linear(self.embed, cfg.encoder_embed_dim)
-        #     if self.embed != cfg.encoder_embed_dim and not cfg.quantize_input
-        #     else None
-        # )
+        self.post_extract_proj = (
+            nn.Linear(self.embed, cfg.encoder_embed_dim)
+            if self.embed != cfg.encoder_embed_dim and not cfg.quantize_input
+            else None
+        )
 
         self.crop_seq_to_multiple = cfg.crop_seq_to_multiple
 
@@ -422,6 +422,7 @@ class Wav2Vec2Model(BaseFairseqModel):
         mask_channel_indices=None,
     ):
         B, T, C = x.shape
+        # print('DEBUGGING HERE: ', type(padding_mask), type(mask_indices), type(mask_channel_indices), type(x))
 
         if self.mask_channel_prob > 0 and self.mask_channel_before:
             mask_channel_indices = compute_mask_indices(
@@ -569,8 +570,9 @@ class Wav2Vec2Model(BaseFairseqModel):
         Computes the output length of the convolutional layers
         """
 
-        def _conv_out_length(input_length, kernel_size, stride):
-            return torch.floor((input_length - kernel_size) / stride + 1)
+        def _conv_out_length(input_length, kernel_size, dilate, stride=2):
+            # Formula from: https://arxiv.org/pdf/1603.07285.pdf (Relationship 15)
+            return torch.floor((input_length - kernel_size + (kernel_size - 1) * dilate - (kernel_size-1)*(dilate-1)) / stride + 1)
 
         conv_cfg_list = eval(self.cfg.conv_feature_layers)
 
@@ -592,54 +594,61 @@ class Wav2Vec2Model(BaseFairseqModel):
         mask_channel_indices=None,
         padding_count=None,
     ):
+        # print("INPUT DATA: ", source, padding_mask, mask, features_only, mask_indices, mask_channel_indices, padding_count)
 
-        # if self.feature_grad_mult > 0:
-        #     features = self.feature_extractor(source)
-        #     if self.feature_grad_mult != 1.0:
-        #         features = GradMultiply.apply(features, self.feature_grad_mult)
-        # else:
-        #     with torch.no_grad():
-        #         features = self.feature_extractor(source)
+        # print("SOURCE INPUT SHAPE: ", source.shape)
+        if self.feature_grad_mult > 0:
+            features = self.feature_extractor(source)
+            if self.feature_grad_mult != 1.0:
+                features = GradMultiply.apply(features, self.feature_grad_mult)
+        else:
+            with torch.no_grad():
+                features = self.feature_extractor(source)
 
-        features = source
+        # features = source
 
         features_pen = features.float().pow(2).mean()
 
         features = features.transpose(1, 2)
+        # print("FEATURES SHAPE: ", features.shape)
         # features = self.layer_norm(features)
         unmasked_features = features.clone()
 
         if padding_mask is not None and padding_mask.any():
+            # print("PADDING MASK before: ", padding_mask)
             padding_mask = padding_mask.transpose(1, 2)
             padding_mask = padding_mask[:, :, 0].squeeze()
+            # print("PADDING MASK after: ", padding_mask)
             # print(padding_mask[1, :, :].shape)
             # np.savetxt('padding_mask_tensor.txt', padding_mask[1, :, :].cpu())
-        #     print(padding_mask.shape)
-        #     input_lengths = (1 - padding_mask.long()).sum(-1)
-        #     # apply conv formula to get real output_lengths
-        #     output_lengths = self._get_feat_extract_output_lengths(input_lengths)
-        #     print(input_lengths.shape, output_lengths.shape, features.shape)
+            # print(padding_mask.shape)
+            # print("PADDING MASK SHAPE before PADDING OP: ", padding_mask.shape)
+            input_lengths = (1 - padding_mask.long()).sum(-1)
+            # # apply conv formula to get real output_lengths
+            output_lengths = self._get_feat_extract_output_lengths(input_lengths)
+            # print("INPUT and OUTPUT of PADDING OP: ", input_lengths.shape, output_lengths.shape, features.shape)
+            # print(input_lengths, output_lengths)
 
-        #     padding_mask = torch.zeros(
-        #         features.shape[:2], dtype=features.dtype, device=features.device
-        #     )
+            padding_mask = torch.zeros(
+                features.shape[:2], dtype=features.dtype, device=features.device
+            )
 
-        #     print(( 
-        #             torch.arange(padding_mask.shape[0], device=padding_mask.device),
-        #             output_lengths - 1,
-        #         ))
-        #     # these two operations makes sure that all values
-        #     # before the output lengths indices are attended to
-        #     padding_mask[
-        #         ( 
-        #             torch.arange(padding_mask.shape[0], device=padding_mask.device),
-        #             output_lengths - 1,
-        #         )
-        #     ] = 1
-        #     padding_mask = (1 - padding_mask.flip([-1]).cumsum(-1).flip([-1])).bool()
+            # print(( 
+            #         torch.arange(padding_mask.shape[0], device=padding_mask.device).shape,
+            #         (output_lengths - 1).shape,
+            #     ))
+            # # these two operations makes sure that all values
+            # # before the output lengths indices are attended to
+            padding_mask[
+                (
+                    torch.arange(padding_mask.shape[0], device=padding_mask.device),
+                    output_lengths - 1,
+                )
+            ] = 1
+            padding_mask = (1 - padding_mask.flip([-1]).cumsum(-1).flip([-1])).bool()
+            # print("PADDING MASK after PADDING OP: ", padding_mask)
         else:
             padding_mask = None
-
 
         time_steps_to_drop = features.size(1) % self.crop_seq_to_multiple
         if time_steps_to_drop != 0:
@@ -669,7 +678,6 @@ class Wav2Vec2Model(BaseFairseqModel):
             features = self.project_inp(features)
 
         if mask:
-            # print(mask_indices)
             x, mask_indices = self.apply_mask(
                 features,
                 padding_mask,
@@ -839,7 +847,7 @@ class Wav2Vec2Model(BaseFairseqModel):
 class ConvFeatureExtractionModel(nn.Module):
     def __init__(
         self,
-        conv_layers: List[Tuple[int, int, int]],
+        conv_layers: List[Tuple[int, int, int, int]],
         dropout: float = 0.0,
         mode: str = "default",
         conv_bias: bool = False,
@@ -852,13 +860,16 @@ class ConvFeatureExtractionModel(nn.Module):
             n_in,
             n_out,
             k,
-            stride,
+            dilate,
             is_layer_norm=False,
             is_group_norm=False,
             conv_bias=False,
         ):
             def make_conv():
-                conv = nn.Conv1d(n_in, n_out, k, stride=stride, bias=conv_bias)
+                ''' 1D Causal Convolution
+                    Adapt from: https://github.com/pytorch/pytorch/issues/1333#issuecomment-296833927
+                '''
+                conv = nn.Conv1d(n_in, n_out, k, dilation=dilate, padding=0, stride=2, bias=conv_bias)
                 nn.init.kaiming_normal_(conv.weight)
                 return conv
 
@@ -887,18 +898,20 @@ class ConvFeatureExtractionModel(nn.Module):
             else:
                 return nn.Sequential(make_conv(), nn.Dropout(p=dropout), nn.GELU())
 
-        in_d = 1
+        in_d = 128
         self.conv_layers = nn.ModuleList()
+        self.__padding = []
         for i, cl in enumerate(conv_layers):
             assert len(cl) == 3, "invalid conv definition: " + str(cl)
-            (dim, k, stride) = cl
+            (dim, k, dilate) = cl
+            self.__padding.append((k - 1) * dilate)
 
             self.conv_layers.append(
                 block(
                     in_d,
                     dim,
                     k,
-                    stride,
+                    dilate,
                     is_layer_norm=mode == "layer_norm",
                     is_group_norm=mode == "default" and i == 0,
                     conv_bias=conv_bias,
@@ -907,14 +920,10 @@ class ConvFeatureExtractionModel(nn.Module):
             in_d = dim
 
     def forward(self, x):
-        # print(x.shape)
-
         # # BxT -> BxCxT
         # x = x.unsqueeze(1)
-
-        # for conv in self.conv_layers:
-        #     x = conv(x)
-
+        for conv, pad in zip(self.conv_layers, self.__padding):
+            x = conv(F.pad(x, (pad, 0)))
         return x
 
 
