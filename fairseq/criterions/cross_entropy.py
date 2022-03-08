@@ -34,15 +34,17 @@ class CrossEntropyCriterion(FairseqCriterion):
         3) logging outputs to display while training
         """
         net_output = model(**sample["net_input"])
-        loss, _ = self.compute_loss(model, net_output, sample, reduce=reduce)
+        loss, outputs = self.compute_loss(model, net_output, sample, reduce=reduce)
         sample_size = (
             sample["target"].size(0) if self.sentence_avg else sample["ntokens"]
         )
+
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
+            "ncorrect": (outputs[0] == outputs[1]).sum()
         }
         return loss, sample_size, logging_output
 
@@ -50,9 +52,6 @@ class CrossEntropyCriterion(FairseqCriterion):
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
-        # print(target, target.dtype, target.shape)
-        # print(lprobs, lprobs.dtype, lprobs.shape)
-        # print(self.padding_idx)
         # target = target.type(torch.LongTensor).cuda()
         # loss = F.binary_cross_entropy(lprobs.squeeze(dim=1), target, reduction='sum' if reduce else 'none')
         loss = F.nll_loss(
@@ -60,10 +59,11 @@ class CrossEntropyCriterion(FairseqCriterion):
             target,
             # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
-            weight=torch.tensor([1.0, 10.0]).to('cuda'),
-        # print(loss)
+            weight=torch.tensor([1.0, 7.0]).to('cuda'),
         )
-        return loss, loss
+
+        preds = lprobs.argmax(dim=1)
+        return loss, (preds, target)
 
     @staticmethod
     def reduce_metrics(logging_outputs) -> None:
@@ -87,6 +87,12 @@ class CrossEntropyCriterion(FairseqCriterion):
             metrics.log_derived(
                 "ppl", lambda meters: utils.get_perplexity(meters["loss"].avg)
             )
+        
+        ncorrect = sum(log.get("ncorrect", 0) for log in logging_outputs)
+        nsentences = sum(log.get("nsentences", 0) for log in logging_outputs)
+        metrics.log_scalar(
+            "accuracy", 100.0 * ncorrect / nsentences, nsentences, round=1
+        )
 
     @staticmethod
     def logging_outputs_can_be_summed() -> bool:

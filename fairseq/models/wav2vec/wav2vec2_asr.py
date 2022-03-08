@@ -234,7 +234,6 @@ class Wav2VecCtc(BaseFairseqModel):
 
     def get_normalized_probs(self, net_output, log_probs):
         """Get normalized probabilities (or log probs) from a net's output."""
-
         logits = self.get_logits(net_output)
 
         if log_probs:
@@ -344,18 +343,39 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
     def build_decoder(cls, cfg: Wav2Vec2Seq2SeqConfig):
         # return TransformerDecoder(cfg, tgt_dict, embed_tokens)
         model = torch.nn.Sequential(
-            torch.nn.Linear(cfg.decoder_embed_dim, 32),
-            torch.nn.Tanh(),
+            torch.nn.Linear(cfg.decoder_embed_dim, 64),
+            torch.nn.ReLU(),
             torch.nn.Dropout(p=0.1),
-            torch.nn.Linear(32, 2),
+            torch.nn.Linear(64, 2),
             # torch.nn.Softmax()
         )
         return model
 
     def forward(self, **kwargs):
         encoder_out = self.encoder(**kwargs)
+        # print("ENCODER OUTPUT")
+        # for k, v in encoder_out.items():
+        #     print(k, type(v))
+
+        # if encoder_out['padding_mask'] is not None:
+        #     # print("ENCODER OUTPUT and PADDING MASK SHAPE: ", encoder_out['encoder_out'].shape, encoder_out['padding_mask'].shape)
+        #     print("output shape: ", encoder_out['encoder_out'].shape)
+        #     print("mask length: ", (1 - encoder_out['padding_mask'].long()).sum(-1))
+        #     padding_mask = encoder_out['padding_mask']
+        #     output_lengths = (1 - padding_mask.long()).sum(-1)
+            
+        #     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'][
+        #     (
+        #         torch.arange(padding_mask.shape[0], device=padding_mask.device),
+        #         output_lengths - 1,
+        #         torch.arange(padding_mask.shape[2], device=padding_mask.device),
+        #     )], dim=1)
+
+        #     # encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'][:, :, :], dim=1)
+        # else:
+        #     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
+
         encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-        # print(encoder_out['encoder_out'])
         decoder_out = self.decoder(encoder_out['encoder_out'])
         # print(decoder_out)
         return decoder_out

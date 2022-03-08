@@ -20,9 +20,8 @@ task:
   labels: label
 
 dataset:
-  num_workers: 16
-  max_tokens: 1280
-  batch_size: 128
+  num_workers: 6
+  batch_size: 16
   skip_invalid_size_inputs_valid_test: true
   # validate_after_updates: 50
   # validate_interval: 1000
