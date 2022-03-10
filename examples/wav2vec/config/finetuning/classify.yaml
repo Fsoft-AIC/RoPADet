@@ -57,7 +57,7 @@ lr_scheduler:
 model:
   _name: wav2vec_seq2seq
   w2v_path: ???
-  no_pretrained_weights: true
+  no_pretrained_weights: false
   apply_mask: true
   mask_prob: 0.3
   mask_channel_prob: 0.25

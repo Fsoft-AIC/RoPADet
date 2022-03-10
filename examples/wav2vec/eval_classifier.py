@@ -76,9 +76,12 @@ def evaluate(ensem_preds, targets):
     print (f'Accuracy    : {accuracy1:12.4f}')
 
 
-def load_dataset(X, file_path, dir_path, label):
+def load_dataset(X, file_path, dir_path, label, offset=4):
     X[file_path] = X[file_path].apply(lambda x: dir_path + str(x))
-    feats = list(X[file_path].apply(lambda x: np.load(x[:-4] + '_mel.npy')).values)
+    if offset == 0:
+        feats = list(X[file_path].apply(lambda x: np.load(x + '_mel_2048_128.npy')).values)
+    else:
+        feats = list(X[file_path].apply(lambda x: np.load(x[:-offset] + '_mel_2048_128.npy')).values)
     # feats = np.stack(feats, axis=0)
 
     return feats, X[label].values
@@ -139,15 +142,26 @@ model = models[0].cuda()
 
 print(model)
 
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
+coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
+
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
+aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
+
 X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-# X = X[X['fold'] == 4]
-inp, out = load_dataset(X, 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
-test_dataset = MyDataset(inp, out)
-dataloader = DataLoader(test_dataset, batch_size=4, shuffle=True, num_workers=4, collate_fn=collate_fn)
+coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
+
+test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
+test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
+
+test_dataset = MyDataset(test_set_inp, test_set_out)
+dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
 
 pred_array = []
 target_array = []
 model.eval()
+model.encoder.eval()
+model.decoder.eval()
 for inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
     labels = labels.to('cuda')
@@ -157,9 +171,14 @@ for inputs, labels, lengths in dataloader:
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
     # print(encoder_out['encoder_out'])
     outputs = model.decoder(encoder_out['encoder_out'])
+    # print(outputs.shape)
+    # print(torch.nn.functional.log_softmax(outputs, dim=1).shape)
+    # outputs = torch.nn.functional.softmax(outputs, dim=1)
     # outputs = model(inputs)
     # _, preds = torch.max(outputs, 1)
-    print(outputs.detach().cpu().numpy())
+    # print(torch.nn.functional.softmax(outputs, dim=1).detach().cpu().numpy())
+    # print(outputs.detach().cpu().numpy()[:, 1].squeeze())
+    # print(outputs.detach().cpu().numpy())
     if outputs.detach().cpu().numpy().shape[0] == 1:
         pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
     else:
