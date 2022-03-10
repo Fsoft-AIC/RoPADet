@@ -44,14 +44,19 @@ class CrossEntropyCriterion(FairseqCriterion):
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
-            "ncorrect": (outputs[0] == outputs[1]).sum()
+            "ncorrect": (outputs[0] == outputs[1]).sum(),
+            "predicts": F.softmax(net_output, dim=1).detach().cpu().numpy()[:, 1].squeeze().tolist(),
+            "targets": outputs[1].detach().cpu().numpy().tolist(),
         }
+        # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
         return loss, sample_size, logging_output
 
     def compute_loss(self, model, net_output, sample, reduce=True):
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
+        # print("PREDICTION TARGET: ", target)
+        # print("PREDICTIONS: ", )
         # target = target.type(torch.LongTensor).cuda()
         # loss = F.binary_cross_entropy(lprobs.squeeze(dim=1), target, reduction='sum' if reduce else 'none')
         loss = F.nll_loss(
@@ -91,8 +96,21 @@ class CrossEntropyCriterion(FairseqCriterion):
         ncorrect = sum(log.get("ncorrect", 0) for log in logging_outputs)
         nsentences = sum(log.get("nsentences", 0) for log in logging_outputs)
         metrics.log_scalar(
-            "accuracy", 100.0 * ncorrect / nsentences, nsentences, round=1
+            "accuracy", 100.0 * ncorrect / nsentences, nsentences, round=3
         )
+
+        # predicts = [log.get("predicts") for log in logging_outputs]
+        # targets = [log.get("targets") for log in logging_outputs]
+
+        # flat_predicts = [item for predict in predicts for item in predict]
+        # flat_targets = [item for target in targets for item in target]
+        # print("TARGET: ", flat_targets)
+        # print("PREDICTIONS: ", flat_predicts)
+        # metrics.log_scalar(
+        #     "auc", roc_auc_score(flat_targets, flat_predicts), round=3
+        # )
+        # metrics.log_derived()
+
 
     @staticmethod
     def logging_outputs_can_be_summed() -> bool:
@@ -101,4 +119,4 @@ class CrossEntropyCriterion(FairseqCriterion):
         across workers prior to calling `reduce_metrics`. Setting this
         to True will improves distributed training speed.
         """
-        return True
+        return False

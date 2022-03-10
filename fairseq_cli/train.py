@@ -474,16 +474,29 @@ def validate(
         # create a new root metrics aggregator so validation metrics
         # don't pollute other aggregators (e.g., train meters)
         with metrics.aggregate(new_root=True) as agg:
+            if cfg.checkpoint.best_checkpoint_metric == 'auc':
+                final_targets = []
+                final_predicts = []
             for i, sample in enumerate(progress):
                 if (
                     cfg.dataset.max_valid_steps is not None
                     and i > cfg.dataset.max_valid_steps
                 ):
                     break
-                trainer.valid_step(sample)
+                logging_output = trainer.valid_step(sample)
+                if cfg.checkpoint.best_checkpoint_metric == 'auc':
+                    final_targets.extend(logging_output["targets"])
+                    final_predicts.extend(logging_output["predicts"])
 
         # log validation stats
-        stats = get_valid_stats(cfg, trainer, agg.get_smoothed_values())
+        if cfg.checkpoint.best_checkpoint_metric == 'auc':
+            from sklearn.metrics import roc_auc_score
+
+            dct = agg.get_smoothed_values()
+            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts)
+            stats = get_valid_stats(cfg, trainer, dct)
+        else:
+            stats = get_valid_stats(cfg, trainer, agg.get_smoothed_values())
 
         if hasattr(task, "post_validate"):
             task.post_validate(trainer.get_model(), stats, agg)

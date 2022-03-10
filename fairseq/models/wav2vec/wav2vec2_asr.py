@@ -249,7 +249,7 @@ class Wav2VecCtc(BaseFairseqModel):
 @dataclass
 class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
     decoder_embed_dim: int = field(
-        default=128, metadata={"help": "decoder embedding dimension"}
+        default=256, metadata={"help": "decoder embedding dimension"}
     )
     decoder_ffn_embed_dim: int = field(
         default=3072, metadata={"help": "decoder embedding dimension for FFN"}

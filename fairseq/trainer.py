@@ -1155,6 +1155,15 @@ class Trainer(object):
             logging_outputs = self._xla_markstep_and_send_to_cpu(logging_outputs)
         logging_output = self._reduce_and_log_stats(logging_outputs, sample_size)
 
+        if self.cfg.checkpoint.best_checkpoint_metric == 'auc':
+            targets = [log.get("targets") for log in logging_outputs]
+            flat_targets = [item for target in targets for item in target]
+            logging_output["targets"] = flat_targets
+
+            predicts = [log.get("predicts") for log in logging_outputs]
+            flat_predicts = [item for predict in predicts for item in predict]
+            logging_output["predicts"] = flat_predicts
+
         return logging_output
 
     def zero_grad(self):
