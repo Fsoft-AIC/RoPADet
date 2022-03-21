@@ -121,5 +121,5 @@ hydra:
         exclude_keys: []
   runtime:
     version: 1.0.7
-    cwd: /media/SSD500/tungtk2/fairseq
+    cwd: /media/SSD/tungtk2/fairseq
   verbose: false

@@ -6,7 +6,7 @@ from fairseq.data import MelAudioDataset, AddTargetDataset, Dictionary
 from fairseq.data.text_compressor import TextCompressionLevel, TextCompressor
 import numpy as np
 import pandas as pd
-from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, auc, precision_recall_curve, roc_curve, average_precision_score
+from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, auc, precision_recall_curve, roc_curve, average_precision_score, accuracy_score
 
 
 def compute_metrics(cfs_matrix):
@@ -76,6 +76,25 @@ def evaluate(ensem_preds, targets):
     print (f'Accuracy    : {accuracy1:12.4f}')
 
 
+def multi_class_evaluate(ensem_preds, targets):
+    onehot_preds = [np.argmax(pred) for pred in ensem_preds]
+    print(f"\nAUC score: {roc_auc_score(targets, ensem_preds, multi_class='ovr'):12.4f}")
+
+    cm1 = confusion_matrix(targets, onehot_preds)
+    print('\nConfusion Matrix : \n', cm1)
+    precision, recall, f1 = compute_metrics(cm1)
+    acc = accuracy_score(targets, onehot_preds)
+
+    print('\n=============')
+    print (f'Precision  : {precision:12.4f}')
+    
+    print(f'Recall      : {recall:12.4f}')
+    
+    print(f'F1 Score    : {f1:12.4f}')
+
+    print(f'Accuracy    : {acc:12.4f}')
+
+
 def load_dataset(X, file_path, dir_path, label, offset=4):
     X[file_path] = X[file_path].apply(lambda x: dir_path + str(x))
     if offset == 0:
@@ -137,22 +156,36 @@ args = options.parse_args_and_arch(parser)
 task = tasks.setup_task(args)
 # Load model
 print(f' | loading model from ${args.path}')
+# models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
 models, _model_args = checkpoint_utils.load_model_ensemble([args.path])
 model = models[0].cuda()
 
 print(model)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
-coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
+# NOTE: For COVID-19 dataset
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
+# coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
-aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
+# aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
+# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
 
-test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
-test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
+# test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
+# test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
+
+# test_set_inp = [*aicvvn_test_set_inp]
+# test_set_out = np.array(aicvvn_test_set_out)
+
+# NOTE: For urban8k
+X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
+X['file_path'] = X.apply(lambda x: f"/media/SSD/tungtk2/UrbanSound8K/audio/fold{ x['fold'] }/{ x['slice_file_name'] }", axis=1)
+urban8k_test_set_inp, urban8k_test_set_out = load_dataset(X[X['fold'] == 1], 'file_path', '', 'classID')
+
+test_set_inp = [*urban8k_test_set_inp]
+test_set_out = np.array(urban8k_test_set_out)
+
 
 test_dataset = MyDataset(test_set_inp, test_set_out)
 dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
@@ -173,16 +206,25 @@ for inputs, labels, lengths in dataloader:
     outputs = model.decoder(encoder_out['encoder_out'])
     # print(outputs.shape)
     # print(torch.nn.functional.log_softmax(outputs, dim=1).shape)
-    # outputs = torch.nn.functional.softmax(outputs, dim=1)
+    outputs = torch.nn.functional.softmax(outputs, dim=1)
     # outputs = model(inputs)
     # _, preds = torch.max(outputs, 1)
     # print(torch.nn.functional.softmax(outputs, dim=1).detach().cpu().numpy())
     # print(outputs.detach().cpu().numpy()[:, 1].squeeze())
     # print(outputs.detach().cpu().numpy())
-    if outputs.detach().cpu().numpy().shape[0] == 1:
-        pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
-    else:
-        pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
+
+    # if outputs.detach().cpu().numpy().shape[0] == 1:
+    #     pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
+    # else:
+    #     pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
+    
+    #NOTE: For Urban8k
+    # print("PREDICTION ARRAY SHAPE: ", outputs.detach().cpu().numpy().shape)
+    pred_array.append(outputs.detach().cpu().numpy().squeeze())
+
     target_array.extend(list(labels.detach().cpu().numpy()))
 
-print(evaluate(pred_array, target_array))
+# print("PREDICTION ARRAY: ", pred_array)
+# print("TARGET ARRAY: ", target_array)
+
+print(multi_class_evaluate(pred_array, target_array))

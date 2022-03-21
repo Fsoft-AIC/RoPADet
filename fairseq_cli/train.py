@@ -493,7 +493,7 @@ def validate(
             from sklearn.metrics import roc_auc_score
 
             dct = agg.get_smoothed_values()
-            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts)
+            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
             stats = get_valid_stats(cfg, trainer, dct)
         else:
             stats = get_valid_stats(cfg, trainer, agg.get_smoothed_values())

@@ -39,13 +39,16 @@ class CrossEntropyCriterion(FairseqCriterion):
             sample["target"].size(0) if self.sentence_avg else sample["ntokens"]
         )
 
+        # print("PREDICTIONS SHAPE: ", F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze().shape)
+        # print("PREDICTIONS: ", F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze())
+
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
             "ncorrect": (outputs[0] == outputs[1]).sum(),
-            "predicts": F.softmax(net_output, dim=1).detach().cpu().numpy()[:, 1].squeeze().tolist(),
+            "predicts": F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze().tolist(),
             "targets": outputs[1].detach().cpu().numpy().tolist(),
         }
         # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
@@ -56,7 +59,7 @@ class CrossEntropyCriterion(FairseqCriterion):
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
         # print("PREDICTION TARGET: ", target)
-        # print("PREDICTIONS: ", )
+        # print("PREDICTIONS: ", lprobs)
         # target = target.type(torch.LongTensor).cuda()
         # loss = F.binary_cross_entropy(lprobs.squeeze(dim=1), target, reduction='sum' if reduce else 'none')
         loss = F.nll_loss(
@@ -64,7 +67,7 @@ class CrossEntropyCriterion(FairseqCriterion):
             target,
             # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
-            weight=torch.tensor([1.0, 7.0]).to('cuda'),
+            # weight=torch.tensor([1.0, 7.0]).to('cuda'),
         )
 
         preds = lprobs.argmax(dim=1)

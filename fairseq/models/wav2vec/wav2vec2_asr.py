@@ -346,7 +346,7 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
             torch.nn.Linear(cfg.decoder_embed_dim, 64),
             torch.nn.ReLU(),
             torch.nn.Dropout(p=0.1),
-            torch.nn.Linear(64, 2),
+            torch.nn.Linear(64, 10),
             # torch.nn.Softmax()
         )
         return model
