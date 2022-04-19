@@ -18,6 +18,7 @@ from fairseq.models import BaseFairseqModel, register_model
 from fairseq.modules import (
     Fp32GroupNorm,
     Fp32LayerNorm,
+    Fp32BatchNorm,
     GumbelVectorQuantizer,
     KmeansVectorQuantizer,
     TransposeLast,

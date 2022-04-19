@@ -306,11 +306,12 @@ class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
 
 @register_model("wav2vec_seq2seq", dataclass=Wav2Vec2Seq2SeqConfig)
 class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder, decoder, users_profile):
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
+        self.users_profile = users_profile
 
     @classmethod
     def build_model(cls, cfg: Wav2Vec2Seq2SeqConfig, task: FairseqTask):
@@ -331,24 +332,35 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         # decoder_embed_tokens = build_embedding(tgt_dict, cfg.decoder_embed_dim)
 
         encoder = cls.build_encoder(cfg)
-        decoder = cls.build_decoder(cfg)
+        decoder = cls.build_decoder(cfg, task)
+        if task.cfg.profiling:
+            users_profile = torch.load(task.cfg.profiles_path)
+        else:
+            users_profile = None
 
-        return Wav2Vec2Seq2SeqModel(encoder, decoder)
+        return Wav2Vec2Seq2SeqModel(encoder, decoder, users_profile)
 
     @classmethod
     def build_encoder(cls, cfg: Wav2Vec2AsrConfig):
         return Wav2VecEncoder(cfg)
 
     @classmethod
-    def build_decoder(cls, cfg: Wav2Vec2Seq2SeqConfig):
+    def build_decoder(cls, cfg: Wav2Vec2Seq2SeqConfig, task: FairseqTask):
         # return TransformerDecoder(cfg, tgt_dict, embed_tokens)
-        model = torch.nn.Sequential(
-            torch.nn.Linear(cfg.decoder_embed_dim, 64),
-            torch.nn.ReLU(),
-            torch.nn.Dropout(p=0.1),
-            torch.nn.Linear(64, 10),
-            # torch.nn.Softmax()
-        )
+        if task.cfg.profiling:
+            model = torch.nn.Sequential(
+                torch.nn.Linear(512, 128),
+                torch.nn.ReLU(),
+                torch.nn.Dropout(p=0.1),
+                torch.nn.Linear(128, 2),
+            )
+        else:
+            model = torch.nn.Sequential(
+                torch.nn.Linear(cfg.decoder_embed_dim, 64),
+                torch.nn.ReLU(),
+                torch.nn.Dropout(p=0.1),
+                torch.nn.Linear(64, 2),
+            )
         return model
 
     def forward(self, **kwargs):
@@ -376,8 +388,18 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         #     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
 
         encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-        decoder_out = self.decoder(encoder_out['encoder_out'])
-        # print(decoder_out)
+
+        if self.users_profile:
+            profiles_id = kwargs['profile']
+            profiles = list(map(lambda profile_id: self.users_profile[profile_id], profiles_id))
+            profiles_tensor = torch.stack(profiles).to(encoder_out['encoder_out'].get_device())
+
+            decoder_input = torch.cat((encoder_out['encoder_out'], profiles_tensor), dim=1)
+        else:
+            decoder_input = encoder_out['encoder_out']
+        # print("DECODER INPUT SHAPE: ", decoder_input.shape)
+
+        decoder_out = self.decoder(decoder_input)
         return decoder_out
 
     def upgrade_state_dict_named(self, state_dict, name):

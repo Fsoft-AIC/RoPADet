@@ -30,10 +30,10 @@ distributed_training:
   ddp_backend: legacy_ddp
 
 criterion:
-  _name: wav2vec∏
+  _name: wav2vec
   infonce: true
   log_keys: ["prob_perplexity","code_perplexity","temp"]
-  loss_weights: [0.1, 10]
+  loss_weights: [0.1, 1]
 
 optimization:
   max_update: 400000
@@ -60,6 +60,6 @@ model:
   feature_grad_mult: 0.1
   encoder_embed_dim: 256
   encoder_ffn_embed_dim: 512
-  encoder_layers: 4
-  encoder_attention_heads: 4
+  encoder_layers: 2
+  encoder_attention_heads: 2
   conv_feature_layers: "[(512, 5, 1)] + [(512, 5, 2)] + [(256, 5, 4)]"

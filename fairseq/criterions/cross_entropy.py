@@ -3,6 +3,7 @@
 # This source code is licensed under the MIT license found in the
 # LICENSE file in the root directory of this source tree.
 
+from curses import raw
 import math
 from dataclasses import dataclass
 
@@ -12,6 +13,7 @@ from fairseq import metrics, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
 from fairseq.dataclass import FairseqDataclass
 from omegaconf import II
+from sklearn.metrics import brier_score_loss
 
 
 @dataclass
@@ -42,13 +44,19 @@ class CrossEntropyCriterion(FairseqCriterion):
         # print("PREDICTIONS SHAPE: ", F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze().shape)
         # print("PREDICTIONS: ", F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze())
 
+        raw_predicts = F.softmax(net_output, dim=1).detach().cpu().numpy()
+        if raw_predicts.shape[0] == 1:
+            predicts = [raw_predicts.squeeze()[1]]
+        else:
+            predicts = raw_predicts[:, 1].squeeze().tolist()
+
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
             "ncorrect": (outputs[0] == outputs[1]).sum(),
-            "predicts": F.softmax(net_output, dim=1).detach().cpu().numpy().squeeze().tolist(),
+            "predicts": predicts,
             "targets": outputs[1].detach().cpu().numpy().tolist(),
         }
         # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
@@ -59,16 +67,20 @@ class CrossEntropyCriterion(FairseqCriterion):
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
         # print("PREDICTION TARGET: ", target)
-        # print("PREDICTIONS: ", lprobs)
-        # target = target.type(torch.LongTensor).cuda()
-        # loss = F.binary_cross_entropy(lprobs.squeeze(dim=1), target, reduction='sum' if reduce else 'none')
+        # print("PREDICTIONS: ", F.softmax(net_output, dim=1).max(dim=1)[0])
+        # print("DIFF: ", torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2))
+
+        # NOTE: Log-likelihood loss
         loss = F.nll_loss(
             lprobs,
             target,
             # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
-            # weight=torch.tensor([1.0, 7.0]).to('cuda'),
+            weight=torch.tensor([1.0, 7.0]).to('cuda'),
         )
+
+        # # NOTE: Brier Score loss
+        # loss = torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2)
 
         preds = lprobs.argmax(dim=1)
         return loss, (preds, target)

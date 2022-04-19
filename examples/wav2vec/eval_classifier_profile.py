@@ -112,34 +112,36 @@ def collate_fn(data):
              where 'example' is a tensor of arbitrary shape
              and label/length are scalars
     """
-    _, labels, lengths = zip(*data)
+    ids, _, labels, lengths = zip(*data)
     max_len = max(lengths)
-    n_ftrs = data[0][0].shape[0]
+    n_ftrs = data[0][1].shape[0]
     features = torch.zeros((len(data), n_ftrs, max_len))
     labels = torch.tensor(labels)
     # lengths = torch.tensor(lengths)
     lengths = torch.zeros((len(data), max_len))
 
     for i in range(len(data)):
-        j, k = data[i][0].shape[0], data[i][0].shape[1]
+        j, k = data[i][1].shape[0], data[i][1].shape[1]
         # print(torch.from_numpy(data[i][0]).shape)
         # print(torch.zeros((j, max_len - k)).shape)
-        features[i] = torch.cat([torch.from_numpy(data[i][0]), torch.zeros((j, max_len - k))], dim=1)
+        features[i] = torch.cat([torch.from_numpy(data[i][1]), torch.zeros((j, max_len - k))], dim=1)
         lengths[i][:k] = 1
 
-    return features.float(), labels.long(), lengths.long()
+    return ids, features.float(), labels.long(), lengths.long()
 
 
 class MyDataset(Dataset):
-    def __init__(self, data, targets):
+    def __init__(self, ids, data, targets):
+        self.ids = ids
         self.data = data
         self.targets = torch.from_numpy(targets)
 
     def __getitem__(self, index):
+        id = self.ids[index]
         x = self.data[index]
         y = self.targets[index]
 
-        return x, y, x.shape[1]
+        return id, x, y, x.shape[1]
 
     def __len__(self):
         return len(self.data)
@@ -162,13 +164,13 @@ print(model)
 
 # NOTE: For COVID-19 dataset
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
-# coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
+# coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
-aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
+# aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
 
-# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
+coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
 
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_test/public_test_sample_submission.csv')
 # res = X.copy()
@@ -177,8 +179,33 @@ aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid
 # test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
 # test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
 
-test_set_inp = [*aicvvn_test_set_inp]
-test_set_out = np.array(aicvvn_test_set_out)
+# NOTE: PROFILING
+def map_age(age):
+    groups = [[0, 2], [3, 5], [6, 13], [14, 18], [19, 33], [34, 48], [49, 64], [65, 78], [79, 98]]
+    for group in groups:
+        if group[0] <= age <= group[1]:
+            return f'group_{group[0]}_{group[1]}'
+    print(age)
+# X['a'] = X['a'].apply(map_age)
+
+def create_profile(row):
+    age = row['subject_age']
+    gender = row['subject_gender']
+    phase = 'train' if row['fold'] in [0, 1, 2] else 'valid' if row['fold'] == 3 else 'test'
+    return age + '_' + gender + '_' + phase
+def create_profile_by_id(row):
+    id = row['id']
+    phase = 'train' if row['fold'] in [1, 2, 3] else 'valid' if row['fold'] == 4 else 'test'
+    return id + '_' + phase
+X['profile'] = X.apply(create_profile_by_id, axis=1)
+# X['profile'] = X.apply(lambda row: row['a'] + '_' + row['g'], axis=1)
+# X['profile'] = X.apply(lambda row: row['subject_age'] + '_' + row['subject_gender'], axis=1)
+
+ids = list(X[X['fold'] == 0]['profile'])
+profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-03-26/07-44-22/checkpoints/coswara_id_fold0.pt')
+
+test_set_inp = [*coswara_test_set_inp]
+test_set_out = np.array(coswara_test_set_out)
 
 # # NOTE: For urban8k
 # X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
@@ -189,7 +216,7 @@ test_set_out = np.array(aicvvn_test_set_out)
 # test_set_out = np.array(urban8k_test_set_out)
 
 
-test_dataset = MyDataset(test_set_inp, test_set_out)
+test_dataset = MyDataset(ids, test_set_inp, test_set_out)
 dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
 
 pred_array = []
@@ -198,14 +225,21 @@ model.eval()
 model.encoder.eval()
 model.decoder.eval()
 
-for inputs, labels, lengths in dataloader:
+for ids, inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
     labels = labels.to('cuda')
     lengths = lengths.unsqueeze(dim=1).to('cuda')
 
     encoder_out = model.encoder(inputs, lengths)
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-    outputs = model.decoder(encoder_out['encoder_out'])
+
+    # NOTE: only works for batch size = 1
+    profile = profiles[ids[0]].to('cuda')
+    profile = profile.unsqueeze(dim=0)
+
+    decoder_input = torch.cat((encoder_out['encoder_out'], profile), dim=1)
+
+    outputs = model.decoder(decoder_input)
 
     if outputs.detach().cpu().numpy().shape[0] == 1:
         pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])

@@ -18,6 +18,7 @@ from fairseq.dataclass import ChoiceEnum, FairseqDataclass
 from fairseq.distributed import fsdp_wrap
 from fairseq.models import BaseFairseqModel, register_model
 from fairseq.modules import (
+    Fp32BatchNorm,
     Fp32GroupNorm,
     Fp32LayerNorm,
     GradMultiply,
@@ -295,8 +296,6 @@ class Wav2Vec2Model(BaseFairseqModel):
     def __init__(self, cfg: Wav2Vec2Config):
         super().__init__()
         self.cfg = cfg
-
-        # TODO: modify here
 
         feature_enc_layers = eval(cfg.conv_feature_layers)
         self.embed = feature_enc_layers[-1][0]
@@ -884,6 +883,7 @@ class ConvFeatureExtractionModel(nn.Module):
                     nn.Sequential(
                         TransposeLast(),
                         Fp32LayerNorm(dim, elementwise_affine=True),
+                        # Fp32BatchNorm(num_features=n_out),
                         TransposeLast(),
                     ),
                     nn.GELU(),
@@ -893,6 +893,7 @@ class ConvFeatureExtractionModel(nn.Module):
                     make_conv(),
                     nn.Dropout(p=dropout),
                     Fp32GroupNorm(dim, dim, affine=True),
+                    # Fp32BatchNorm(num_features=n_out),
                     nn.GELU(),
                 )
             else:
@@ -1025,6 +1026,7 @@ class TransformerEncoder(nn.Module):
         )
         self.layer_norm_first = args.layer_norm_first
         self.layer_norm = LayerNorm(self.embedding_dim)
+        # self.layer_norm = Fp32BatchNorm(num_features=self.embedding_dim, sync=False)
         self.layerdrop = args.encoder_layerdrop
 
         self.apply(init_bert_params)
@@ -1053,7 +1055,12 @@ class TransformerEncoder(nn.Module):
         x = x + x_conv
 
         if not self.layer_norm_first:
+            # NOTE: uncomment these transpose if using Batch Norm
+            # # B x T x C -> B x C x T
+            # x = x.transpose(1,2)
             x = self.layer_norm(x)
+            # # B x C x T -> B x T x C
+            # x = x.transpose(1,2)
 
         # pad to the sequence length dimension
         x, pad_length = pad_to_multiple(
@@ -1243,11 +1250,13 @@ class TransformerSentenceEncoderLayer(nn.Module):
 
         # layer norm associated with the self attention layer
         self.self_attn_layer_norm = LayerNorm(self.embedding_dim)
+        # self.self_attn_layer_norm = Fp32BatchNorm(num_features=self.embedding_dim, sync=False)
         self.fc1 = nn.Linear(self.embedding_dim, ffn_embedding_dim)
         self.fc2 = nn.Linear(ffn_embedding_dim, self.embedding_dim)
 
         # layer norm associated with the position wise feed-forward NN
         self.final_layer_norm = LayerNorm(self.embedding_dim)
+        # self.final_layer_norm = Fp32BatchNorm(num_features=self.embedding_dim, sync=False)
 
     def forward(
         self,
@@ -1298,7 +1307,12 @@ class TransformerSentenceEncoderLayer(nn.Module):
             x = self.dropout1(x)
             x = residual + x
 
+            # NOTE: uncomment these permute if using Batch Norm
+            # # T x B x C -> B x C x T
+            # x = x.permute((1,2,0))
             x = self.self_attn_layer_norm(x)
+            # # B x C x T -> T x B x C
+            # x = x.permute((2,0,1))
 
             residual = x
             x = self.activation_fn(self.fc1(x))
@@ -1309,6 +1323,12 @@ class TransformerSentenceEncoderLayer(nn.Module):
 
             x = self.dropout3(x)
             x = residual + x
+
+            # NOTE: uncomment these permute if using Batch Norm
+            # # T x B x C -> B x C x T
+            # x = x.permute((1,2,0))
             x = self.final_layer_norm(x)
+            # # B x C x T -> T x B x C
+            # x = x.permute((2,0,1))
 
         return x, (attn, layer_result)
