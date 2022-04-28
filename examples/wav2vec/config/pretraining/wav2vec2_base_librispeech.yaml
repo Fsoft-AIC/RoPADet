@@ -19,6 +19,7 @@ task:
   num_mels: 128
   normalize: false
   enable_padding: true
+  profiling: false
 
 dataset:
   num_workers: 6
