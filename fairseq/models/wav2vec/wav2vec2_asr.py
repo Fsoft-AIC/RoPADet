@@ -392,6 +392,12 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         if self.users_profile:
             profiles_id = kwargs['profile']
             profiles = list(map(lambda profile_id: self.users_profile[profile_id], profiles_id))
+            # print("PROFILES: ", type(profiles), len(profiles))
+            # for profile in profiles:
+            #     # print("PROFILE: ", profile.shape)
+            #     if type(profile) == list:
+            #         # print(profiles_id)
+            #         print(profile)
             profiles_tensor = torch.stack(profiles).to(encoder_out['encoder_out'].get_device())
 
             decoder_input = torch.cat((encoder_out['encoder_out'], profiles_tensor), dim=1)
@@ -468,8 +474,18 @@ class Wav2VecEncoder(FairseqEncoder):
         w2v_args.task.data = cfg.data
         task = tasks.setup_task(w2v_args.task)
         model = task.build_model(w2v_args.model, from_checkpoint=True)
-
-        model.remove_pretraining_modules()
+        if w2v_args.task._name == 'stft_audio_pretraining':
+            model.remove_pretraining_modules()
+            # print("NEW LOADING METHOD, PRINTING MODEL TYPE IN EACH STEP")
+            # print("MODEL STYLE IN STEP 1: ", type(model))
+            # model = model.encoder
+            # print("MODEL STYLE IN STEP 2: ", type(model))
+            # model = model.w2v_model
+            # print("MODEL STYLE IN STEP 3: ", type(model))
+        #     pass
+        # else:
+        # print("TYPE OF MODEL 3: ", type(model2))
+        # print("TASK AND MODEL: ", w2v_args.task, w2v_args.model)
 
         if state is not None and not cfg.no_pretrained_weights:
             self.load_model_weights(state, model, cfg)
@@ -478,7 +494,11 @@ class Wav2VecEncoder(FairseqEncoder):
 
         d = w2v_args.model.encoder_embed_dim
 
-        self.w2v_model = model
+        if w2v_args.task._name == 'audio_finetuning':
+            self.w2v_model = model.encoder.w2v_model
+            d = 256
+        else:
+            self.w2v_model = model
 
         self.final_dropout = nn.Dropout(cfg.final_dropout)
         self.freeze_finetune_updates = cfg.freeze_finetune_updates
@@ -526,6 +546,19 @@ class Wav2VecEncoder(FairseqEncoder):
         else:
             if "_ema" in state["model"]:
                 del state["model"]["_ema"]
+            # if cfg.w2v_args.task._name == 'audio_finetuning':
+            #     print("NEW LOADING, MODEL TYPE: ", type(model))
+            #     new_dict = {
+            #         k.replace('encoder.', ''): v
+            #         for (k, v) in state['model'].items()
+            #         if k.startswith('encoder.')
+            #     }
+            # # print("MODEL STATE: ", state["model"].keys())
+            # # print("MODEL: ", model)
+            
+            #     model.load_state_dict(new_dict, strict=True)
+            # # print("NIGGA WUT")
+            # else:
             model.load_state_dict(state["model"], strict=True)
 
     def set_num_updates(self, num_updates):

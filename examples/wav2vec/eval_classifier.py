@@ -161,24 +161,56 @@ model = models[0].cuda()
 print(model)
 
 # NOTE: For COVID-19 dataset
-# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
-# coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
-aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/output/df_5fold.csv')
+# sounddr_test_set_inp, sounddr_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label_covid', offset=4)
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_maj.csv')
+# X = X.loc[~X['file_path'].isin(['assets/audio/isofh_undefined-1635044334.8719654.wav', 'assets/audio/isofh_undefined-1635054324.1639278.wav', 'assets/audio/isofh_undefined-1645344442.8312197.wav', 'assets/audio/isofh_undefined-1646753418.6567717.wav', 'assets/audio/isofh_undefined-1646086594.8671155.wav', 'assets/audio/isofh_undefined-1646133546.8110027.wav', 'assets/audio/QhUkPm-1633484885.7741814.wav', 'assets/audio/isofh_undefined-1634049245.820838.wav', 'assets/audio/isofh_undefined-1647675255.3401847.wav', 'assets/audio/yoJaXY-1646410609.823617.wav', 'assets/audio/isofh_undefined-1646882061.0733764.wav', 'assets/audio/isofh_undefined-1634905167.7832456.wav', 'assets/audio/bookingcare-211025-152625-61766a3167e69-1635150385.902807.wav'])]
+# aicvvn_new_test_set_inp, aicvvn_new_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label', offset=4)
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/df_fold.csv')
+# coughvid_test_set_inp, coughvid_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coughvid/public_dataset/', 'label_covid', offset=5)
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
+# aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
 
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
+# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid', offset=4)
+
+
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_maj.csv')
+sounddr_maj_inp, sounddr_maj_out = load_dataset(X[X['fold']==4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label')
+
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_maj.csv')
+X = X.loc[~X['file_path'].isin(['assets/audio/isofh_undefined-1635044334.8719654.wav', 'assets/audio/isofh_undefined-1635054324.1639278.wav', 'assets/audio/isofh_undefined-1645344442.8312197.wav', 'assets/audio/isofh_undefined-1646753418.6567717.wav', 'assets/audio/isofh_undefined-1646086594.8671155.wav', 'assets/audio/isofh_undefined-1646133546.8110027.wav', 'assets/audio/QhUkPm-1633484885.7741814.wav', 'assets/audio/isofh_undefined-1634049245.820838.wav', 'assets/audio/isofh_undefined-1647675255.3401847.wav', 'assets/audio/yoJaXY-1646410609.823617.wav', 'assets/audio/isofh_undefined-1646882061.0733764.wav', 'assets/audio/isofh_undefined-1634905167.7832456.wav', 'assets/audio/bookingcare-211025-152625-61766a3167e69-1635150385.902807.wav'])]
+aicovidvn_new_maj_inp, aicovidvn_new_maj_out = load_dataset(X[X['fold']==4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label')
+
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
+# sounddr_min_inp, sounddr_min_out = load_dataset(X[X['fold']==1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label')
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_min.csv')
+# aicovidvn_new_min_inp, aicovidvn_new_min_out = load_dataset(X[X['fold']==1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label')
+
+
 
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_test/public_test_sample_submission.csv')
 # res = X.copy()
 # aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X, 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_test/public_test_audio_files/', 'assessment_result', offset=0)
 
-# test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
-# test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
+# test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp, *sounddr_test_set_inp, *aicvvn_new_test_set_inp]
+# test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out, sounddr_test_set_out, aicvvn_new_test_set_out))
 
-test_set_inp = [*aicvvn_test_set_inp]
-test_set_out = np.array(aicvvn_test_set_out)
+test_set_inp = [*sounddr_maj_inp, *aicovidvn_new_maj_inp]
+test_set_out = np.concatenate((sounddr_maj_out, aicovidvn_new_maj_out))
+
+# test_set_inp = [*sounddr_min_inp, *aicovidvn_new_min_inp]
+# test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
+
+
+# test_set_inp = [*sounddr_test_set_inp]
+# test_set_out = np.array(sounddr_test_set_out)
 
 # # NOTE: For urban8k
 # X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
@@ -198,6 +230,11 @@ model.eval()
 model.encoder.eval()
 model.decoder.eval()
 
+# NOTE: for evaluating profiling model:
+pretrained_models, _ = checkpoint_utils.load_model_ensemble(['/media/SSD/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'])
+pretrained_model = pretrained_models[0].cuda()
+pretrained_model.eval()
+
 for inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
     labels = labels.to('cuda')
@@ -205,7 +242,18 @@ for inputs, labels, lengths in dataloader:
 
     encoder_out = model.encoder(inputs, lengths)
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-    outputs = model.decoder(encoder_out['encoder_out'])
+    # outputs = model.decoder(encoder_out['encoder_out'])
+
+    # NOTE: for evaluating profiling model:
+    with torch.no_grad():
+        pretrained_out = pretrained_model(inputs, lengths, features_only=True)
+    pretrained_output = pretrained_out['x'].squeeze()
+    pretrained_output = torch.mean(pretrained_output, dim=0)
+    pretrained_output = pretrained_output.unsqueeze(dim=0)
+    if len(pretrained_output.shape) == 1:
+        pretrained_output = encoder_out['encoder_out']
+    decoder_input = torch.cat((encoder_out['encoder_out'], pretrained_output), dim=1)
+    outputs = model.decoder(decoder_input)
 
     if outputs.detach().cpu().numpy().shape[0] == 1:
         pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])

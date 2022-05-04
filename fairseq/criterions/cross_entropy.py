@@ -5,7 +5,7 @@
 
 from curses import raw
 import math
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 import torch
 import torch.nn.functional as F
@@ -13,19 +13,25 @@ from fairseq import metrics, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
 from fairseq.dataclass import FairseqDataclass
 from omegaconf import II
-from sklearn.metrics import brier_score_loss
 
 
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
+    positive_class_weight: int = field(
+        default=1,
+        metadata={
+            "help": "class weight for loss function"
+        },
+    )
 
 
 @register_criterion("cross_entropy", dataclass=CrossEntropyCriterionConfig)
 class CrossEntropyCriterion(FairseqCriterion):
-    def __init__(self, task, sentence_avg):
+    def __init__(self, task, sentence_avg, positive_class_weight):
         super().__init__(task)
         self.sentence_avg = sentence_avg
+        self.positive_class_weight = positive_class_weight
 
     def forward(self, model, sample, reduce=True):
         """Compute the loss for the given sample.
@@ -76,7 +82,7 @@ class CrossEntropyCriterion(FairseqCriterion):
             target,
             # ignore_index=self.padding_idx,
             reduction="sum" if reduce else "none",
-            weight=torch.tensor([1.0, 7.0]).to('cuda'),
+            weight=torch.tensor([1.0, self.positive_class_weight]).to('cuda'),
         )
 
         # # NOTE: Brier Score loss

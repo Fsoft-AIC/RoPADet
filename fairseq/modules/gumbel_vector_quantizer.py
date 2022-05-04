@@ -149,6 +149,8 @@ class GumbelVectorQuantizer(nn.Module):
         bsz, tsz, fsz = x.shape
         x = x.reshape(-1, fsz)
         x = self.weight_proj(x)
+        # print(x.shape, self.groups)
+        # print(bsz, tsz)
         x = x.view(bsz * tsz * self.groups, -1)
 
         _, k = x.max(-1)
