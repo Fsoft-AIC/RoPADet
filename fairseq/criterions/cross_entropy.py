@@ -15,6 +15,8 @@ from fairseq.dataclass import FairseqDataclass
 from omegaconf import II
 from sklearn.metrics import brier_score_loss
 
+from fairseq.EncoderContrastive import SupConLoss
+
 
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
@@ -63,6 +65,9 @@ class CrossEntropyCriterion(FairseqCriterion):
         return loss, sample_size, logging_output
 
     def compute_loss(self, model, net_output, sample, reduce=True):
+        if self.task.encoder_contrastive:
+            ae_input, ae_hidden_output, cnn_hidden_output, ae_output, net_output = net_output
+
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
         target = model.get_targets(sample, net_output).view(-1)
@@ -78,6 +83,11 @@ class CrossEntropyCriterion(FairseqCriterion):
             reduction="sum" if reduce else "none",
             weight=torch.tensor([1.0, 7.0]).to('cuda'),
         )
+
+        if self.task.encoder_contrastive:
+            ae_loss = torch.nn.MSELoss()(ae_output, ae_input)
+            cl_loss = SupConLoss()(torch.stack([ae_hidden_output, cnn_hidden_output], dim=1))
+            loss = ae_loss + loss + 0.0005 * cl_loss
 
         # # NOTE: Brier Score loss
         # loss = torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2)

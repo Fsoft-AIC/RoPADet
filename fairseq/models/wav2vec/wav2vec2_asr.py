@@ -33,6 +33,8 @@ from fairseq.models.wav2vec.wav2vec2 import MASKING_DISTRIBUTION_CHOICES
 from fairseq.modules import LayerNorm, PositionalEmbedding, TransformerDecoderLayer
 from fairseq.tasks import FairseqTask
 
+from fairseq.EncoderContrastive import AutoEncoder
+
 logger = logging.getLogger(__name__)
 
 
@@ -313,6 +315,16 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         self.decoder = decoder
         self.users_profile = users_profile
 
+        # self.encoder_contrastive = task.cfg.encoder_contrastive    
+        # if self.encoder_contrastive:
+        self.ae = AutoEncoder(input_dim=98304)
+        self.ae2hidden = nn.Linear(8, 256)
+        self.cnn2hidden = nn.Linear(in_features, 256)
+        self.hidden = nn.Sequential(
+            nn.Linear(256, 256), nn.ReLU(),
+            nn.Linear(256, 256)
+        )
+
     @classmethod
     def build_model(cls, cfg: Wav2Vec2Seq2SeqConfig, task: FairseqTask):
         """Build a new model instance."""
@@ -397,6 +409,19 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
             decoder_input = torch.cat((encoder_out['encoder_out'], profiles_tensor), dim=1)
         else:
             decoder_input = encoder_out['encoder_out']
+
+        if self.encoder_contrastive:
+            ae_input = x.reshape(x.shape[0], -1)
+            ae_bottleneck = self.ae.bottleneck(self.ae.encoder(ae_input))
+
+            ae_bottleneck = F.normalize(ae_bottleneck, dim=1)
+            decoder_input = F.normalize(decoder_input, dim=1)
+
+            ae_hidden_output = self.hidden(self.ae2hidden(ae_bottleneck))
+            cnn_hidden_output = self.hidden(self.cnn2hidden(decoder_input))
+            ae_output = self.ae.output(self.ae.decoder(ae_bottleneck))
+            return ae_input, ae_hidden_output, cnn_hidden_output, ae_output, self.decoder(decoder_input)
+            
         # print("DECODER INPUT SHAPE: ", decoder_input.shape)
 
         decoder_out = self.decoder(decoder_input)

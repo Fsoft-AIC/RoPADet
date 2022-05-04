@@ -175,7 +175,8 @@ class STFTAudioPretrainingTask(FairseqTask):
             num_buckets=self.cfg.num_batch_buckets or int(self.cfg.tpu),
             compute_mask_indices=(self.cfg.precompute_mask_indices or self.cfg.tpu),
             text_compression_level=text_compression_level,
-            profiling=self.cfg.profiling,
+            profiling=False,
+            contrastive=True,
             **self._get_mask_precompute_kwargs(task_cfg),
         )
 
