@@ -95,15 +95,14 @@ def multi_class_evaluate(ensem_preds, targets):
     print(f'Accuracy    : {acc:12.4f}')
 
 
-def load_dataset(X, file_path, dir_path, label, offset=4):
+def load_dataset(X, file_path, dir_path, label, id, offset=4):
     X[file_path] = X[file_path].apply(lambda x: dir_path + str(x))
     if offset == 0:
         feats = list(X[file_path].apply(lambda x: np.load(x + '_mel_2048_128.npy')).values)
     else:
         feats = list(X[file_path].apply(lambda x: np.load(x[:-offset] + '_mel_2048_128.npy')).values)
-    # feats = np.stack(feats, axis=0)
 
-    return feats, X[label].values
+    return feats, X[label].values, X[id].values
 
 
 def collate_fn(data):
@@ -169,8 +168,8 @@ print(model)
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
 # aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
+# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid')
 
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_test/public_test_sample_submission.csv')
 # res = X.copy()
@@ -179,33 +178,40 @@ coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'fi
 # test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
 # test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
 
-# NOTE: PROFILING
-def map_age(age):
-    groups = [[0, 2], [3, 5], [6, 13], [14, 18], [19, 33], [34, 48], [49, 64], [65, 78], [79, 98]]
-    for group in groups:
-        if group[0] <= age <= group[1]:
-            return f'group_{group[0]}_{group[1]}'
-    print(age)
-# X['a'] = X['a'].apply(map_age)
+# # NOTE: PROFILING
+# def map_age(age):
+#     groups = [[0, 2], [3, 5], [6, 13], [14, 18], [19, 33], [34, 48], [49, 64], [65, 78], [79, 98]]
+#     for group in groups:
+#         if group[0] <= age <= group[1]:
+#             return f'group_{group[0]}_{group[1]}'
+#     print(age)
+# # X['a'] = X['a'].apply(map_age)
 
-def create_profile(row):
-    age = row['subject_age']
-    gender = row['subject_gender']
-    phase = 'train' if row['fold'] in [0, 1, 2] else 'valid' if row['fold'] == 3 else 'test'
-    return age + '_' + gender + '_' + phase
-def create_profile_by_id(row):
-    id = row['id']
-    phase = 'train' if row['fold'] in [1, 2, 3] else 'valid' if row['fold'] == 4 else 'test'
-    return id + '_' + phase
-X['profile'] = X.apply(create_profile_by_id, axis=1)
-# X['profile'] = X.apply(lambda row: row['a'] + '_' + row['g'], axis=1)
-# X['profile'] = X.apply(lambda row: row['subject_age'] + '_' + row['subject_gender'], axis=1)
+# def create_profile(row):
+#     age = row['subject_age']
+#     gender = row['subject_gender']
+#     phase = 'train' if row['fold'] in [0, 1, 2] else 'valid' if row['fold'] == 3 else 'test'
+#     return age + '_' + gender + '_' + phase
+# def create_profile_by_id(row):
+#     id = row['id']
+#     phase = 'train' if row['fold'] in [1, 2, 3] else 'valid' if row['fold'] == 4 else 'test'
+#     return id + '_' + phase
+# X['profile'] = X.apply(create_profile_by_id, axis=1)
+# # X['profile'] = X.apply(lambda row: row['a'] + '_' + row['g'], axis=1)
+# # X['profile'] = X.apply(lambda row: row['subject_age'] + '_' + row['subject_gender'], axis=1)
 
-ids = list(X[X['fold'] == 0]['profile'])
-profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-03-26/07-44-22/checkpoints/coswara_id_fold0.pt')
+# ids = list(X[X['fold'] == 0]['profile'])
+profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/profile.pt')
 
-test_set_inp = [*coswara_test_set_inp]
-test_set_out = np.array(coswara_test_set_out)
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_min.csv')
+aicovidvn_new_min_inp, aicovidvn_new_min_out, aicovidvn_new_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label', 'id')
+
+X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
+sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
+
+test_set_inp = [*sounddr_min_inp, *aicovidvn_new_min_inp]
+test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
+test_set_id = np.concatenate((sounddr_min_id, aicovidvn_new_min_id))
 
 # # NOTE: For urban8k
 # X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
@@ -216,7 +222,7 @@ test_set_out = np.array(coswara_test_set_out)
 # test_set_out = np.array(urban8k_test_set_out)
 
 
-test_dataset = MyDataset(ids, test_set_inp, test_set_out)
+test_dataset = MyDataset(test_set_id, test_set_inp, test_set_out)
 dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
 
 pred_array = []

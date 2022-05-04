@@ -264,6 +264,9 @@ def train(
     )
     if cfg.common.tpu:
         itr = utils.tpu_data_loader(itr)
+    chkpt_path = os.path.abspath(cfg.checkpoint.save_dir)
+    start_id = chkpt_path.find('-')-4
+    end_id = chkpt_path.rfind('-')+3
     progress = progress_bar.progress_bar(
         itr,
         log_format=cfg.common.log_format,
@@ -281,9 +284,7 @@ def train(
             if distributed_utils.is_master(cfg.distributed_training)
             else None
         ),
-        wandb_run_name=os.environ.get(
-            "WANDB_NAME", os.path.basename(cfg.checkpoint.save_dir)
-        ),
+        wandb_run_name=chkpt_path[start_id:end_id],
         azureml_logging=(
             cfg.common.azureml_logging
             if distributed_utils.is_master(cfg.distributed_training)

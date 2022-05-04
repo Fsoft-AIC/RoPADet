@@ -44,7 +44,7 @@ optimization:
   max_update: 13000
   lr: [1e-4]
   sentence_avg: true
-  update_freq: [4]
+  update_freq: [1]
   max_epoch: 100
 
 optimizer:

@@ -52,6 +52,13 @@ class STFTAudioPretrainingConfig(FairseqDataclass):
         default=None,
         metadata={"help": "extension of the label file to load, used for fine-tuning"},
     )
+    profiling: bool = field(
+        default=False,
+        metadata={"help": "if set, add profiling branch to downstream model"},
+    )
+    profiles_path: Optional[str] = field(
+        default=None, metadata={"help": "path to the Users Profiles for a dataset"}
+    )
     # binarized_dataset: bool = field(
     #     default=False,
     #     metadata={

@@ -49,13 +49,6 @@ def label_len_fn(label):
 class AudioFinetuningConfig(STFTAudioPretrainingConfig):
     # Options for reporting WER metrics during validation. Only applicable to
     # Seq2Seq models during fine-tuning
-    profiling: bool = field(
-        default=False,
-        metadata={"help": "if set, add profiling branch to downstream model"},
-    )
-    profiles_path: Optional[str] = field(
-        default=None, metadata={"help": "path to the Users Profiles for a dataset"}
-    )
     eval_wer: bool = field(
         default=False, metadata={"help": "compute WER for Seq2Seq models"}
     )
