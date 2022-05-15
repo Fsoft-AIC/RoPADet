@@ -22,6 +22,7 @@ task:
   labels: label
   profiling: false
   profiles_path: None
+  auto_encoder: false
 
 dataset:
   num_workers: 6
@@ -44,7 +45,7 @@ optimization:
   max_update: 13000
   lr: [1e-4]
   sentence_avg: true
-  update_freq: [1]
+  update_freq: [4]
   max_epoch: 100
 
 optimizer:
@@ -61,7 +62,7 @@ lr_scheduler:
 model:
   _name: wav2vec_seq2seq
   w2v_path: ???
-  no_pretrained_weights: false
+  no_pretrained_weights: true
   apply_mask: true
   mask_prob: 0.3
   mask_channel_prob: 0.25

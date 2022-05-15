@@ -1155,7 +1155,7 @@ class Trainer(object):
             logging_outputs = self._xla_markstep_and_send_to_cpu(logging_outputs)
         logging_output = self._reduce_and_log_stats(logging_outputs, sample_size)
 
-        if self.cfg.checkpoint.best_checkpoint_metric == 'auc':
+        if self.cfg.checkpoint.best_checkpoint_metric in ['auc', 'icbhi']:
             targets = [log.get("targets") for log in logging_outputs]
             flat_targets = [item for target in targets for item in target]
             logging_output["targets"] = flat_targets

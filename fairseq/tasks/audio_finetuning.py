@@ -47,6 +47,10 @@ def label_len_fn(label):
 
 @dataclass
 class AudioFinetuningConfig(STFTAudioPretrainingConfig):
+    auto_encoder: bool = field(
+        default=False,
+        metadata={"help": "if set, add auto encoder branch to downstream model"},
+    )
     # Options for reporting WER metrics during validation. Only applicable to
     # Seq2Seq models during fine-tuning
     eval_wer: bool = field(

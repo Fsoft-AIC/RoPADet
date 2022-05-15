@@ -308,22 +308,22 @@ class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
 
 @register_model("wav2vec_seq2seq", dataclass=Wav2Vec2Seq2SeqConfig)
 class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
-    def __init__(self, encoder, decoder, users_profile):
+    def __init__(self, encoder, decoder, users_profile, auto_encoder):
         super().__init__()
 
         self.encoder = encoder
         self.decoder = decoder
         self.users_profile = users_profile
 
-        # self.encoder_contrastive = task.cfg.encoder_contrastive    
-        # if self.encoder_contrastive:
-        self.ae = AutoEncoder(input_dim=98304)
-        self.ae2hidden = nn.Linear(8, 256)
-        self.cnn2hidden = nn.Linear(in_features, 256)
-        self.hidden = nn.Sequential(
-            nn.Linear(256, 256), nn.ReLU(),
-            nn.Linear(256, 256)
-        )
+        self.auto_encoder = auto_encoder
+        if self.auto_encoder:
+            self.ae = AutoEncoder(input_dim=128)
+            self.ae2hidden = nn.Linear(8, 256)
+            self.cnn2hidden = nn.Linear(256, 256)
+            # self.hidden = nn.Sequential(
+            #     nn.Linear(256, 256), nn.ReLU(),
+            #     nn.Linear(256, 256)
+            # )
 
     @classmethod
     def build_model(cls, cfg: Wav2Vec2Seq2SeqConfig, task: FairseqTask):
@@ -344,13 +344,16 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         # decoder_embed_tokens = build_embedding(tgt_dict, cfg.decoder_embed_dim)
 
         encoder = cls.build_encoder(cfg)
+        # for param in encoder.parameters():
+        #     param.requires_grad = False
+
         decoder = cls.build_decoder(cfg, task)
         if task.cfg.profiling:
             users_profile = torch.load(task.cfg.profiles_path)
         else:
             users_profile = None
 
-        return Wav2Vec2Seq2SeqModel(encoder, decoder, users_profile)
+        return Wav2Vec2Seq2SeqModel(encoder, decoder, users_profile, task.cfg.auto_encoder)
 
     @classmethod
     def build_encoder(cls, cfg: Wav2Vec2AsrConfig):
@@ -416,18 +419,27 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         else:
             decoder_input = encoder_out['encoder_out']
 
-        if self.encoder_contrastive:
-            ae_input = x.reshape(x.shape[0], -1)
+        if self.auto_encoder:
+            # source: (batch_size, num_mels, num_timesteps)
+            # mask: (batch_size, num_mels, num_timesteps)
+            x = kwargs['source']
+            mask = kwargs['padding_mask']
+            ae_input = torch.sum(x, dim=2)/(mask.shape[-1]-torch.sum(mask, dim=2))
             ae_bottleneck = self.ae.bottleneck(self.ae.encoder(ae_input))
 
             ae_bottleneck = F.normalize(ae_bottleneck, dim=1)
             decoder_input = F.normalize(decoder_input, dim=1)
 
-            ae_hidden_output = self.hidden(self.ae2hidden(ae_bottleneck))
-            cnn_hidden_output = self.hidden(self.cnn2hidden(decoder_input))
+            # ae_hidden_output = self.hidden(self.ae2hidden(ae_bottleneck))
+            # cnn_hidden_output = self.hidden(self.cnn2hidden(decoder_input))
+            # NOTE: Try without the additional hidden layers
+            ae_hidden_output = self.ae2hidden(ae_bottleneck)
+            cnn_hidden_output = self.cnn2hidden(decoder_input)
+            ae_hidden_output = F.relu(ae_hidden_output)
+            cnn_hidden_output = F.relu(cnn_hidden_output)
             ae_output = self.ae.output(self.ae.decoder(ae_bottleneck))
             return ae_input, ae_hidden_output, cnn_hidden_output, ae_output, self.decoder(decoder_input)
-            
+
         # print("DECODER INPUT SHAPE: ", decoder_input.shape)
 
         decoder_out = self.decoder(decoder_input)

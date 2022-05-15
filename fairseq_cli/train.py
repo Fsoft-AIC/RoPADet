@@ -475,7 +475,7 @@ def validate(
         # create a new root metrics aggregator so validation metrics
         # don't pollute other aggregators (e.g., train meters)
         with metrics.aggregate(new_root=True) as agg:
-            if cfg.checkpoint.best_checkpoint_metric == 'auc':
+            if cfg.checkpoint.best_checkpoint_metric in ['auc', 'icbhi']:
                 final_targets = []
                 final_predicts = []
             for i, sample in enumerate(progress):
@@ -485,7 +485,7 @@ def validate(
                 ):
                     break
                 logging_output = trainer.valid_step(sample)
-                if cfg.checkpoint.best_checkpoint_metric == 'auc':
+                if cfg.checkpoint.best_checkpoint_metric in ['auc', 'icbhi']:
                     final_targets.extend(logging_output["targets"])
                     final_predicts.extend(logging_output["predicts"])
 
@@ -495,6 +495,22 @@ def validate(
 
             dct = agg.get_smoothed_values()
             dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
+            stats = get_valid_stats(cfg, trainer, dct)
+        elif cfg.checkpoint.best_checkpoint_metric == 'icbhi':
+            def get_score(hits, counts):
+                se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
+                sp = hits[0] / counts[0]
+                sc = (se+sp) / 2.0
+                return sc
+
+            class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
+            class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
+            for idx in range(len(final_targets)):
+                class_counts[final_targets[idx]] += 1.0
+                if final_predicts[idx] == final_targets[idx]:
+                    class_hits[final_targets[idx]] += 1.0
+            dct = agg.get_smoothed_values()
+            dct[cfg.checkpoint.best_checkpoint_metric] = get_score(class_hits, class_counts)
             stats = get_valid_stats(cfg, trainer, dct)
         else:
             stats = get_valid_stats(cfg, trainer, agg.get_smoothed_values())
