@@ -1,6 +1,7 @@
 import os
 import torch
 from torch.utils.data import Dataset, DataLoader
+import torch.nn.functional as F
 from fairseq import checkpoint_utils, data, options, tasks
 from fairseq.data import MelAudioDataset, AddTargetDataset, Dictionary
 from fairseq.data.text_compressor import TextCompressionLevel, TextCompressor
@@ -106,6 +107,24 @@ def load_dataset(X, file_path, dir_path, label, offset=4):
     return feats, X[label].values
 
 
+def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test']):
+    '''
+    dir_path: directory to fairseq meta data files
+    orig_dir: original directory that stored the spectrum
+    '''
+    feats = []
+    labels = []
+    for split in splits:
+        with open(os.path.join(dir_path, f'{split}.tsv')) as f, open(os.path.join(dir_path, f'{split}.label')) as label:
+            for line, label in zip(f.read().split('\n')[1:-1], label.read().split('\n')):
+                file_path, _, _, _ = line.split('\t')
+                spec = np.load(os.path.join(orig_dir, file_path))
+                feats.append(spec)
+                labels.append(int(label))
+
+    return feats, labels
+
+
 def collate_fn(data):
     """
        data: is a list of tuples with (example, label, length)
@@ -155,7 +174,7 @@ task = tasks.setup_task(args)
 # Load model
 print(f' | loading model from ${args.path}')
 # models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128_aicovidvn_fold4', 'auto_encoder': True})
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128_aicovidvn_fold4'})
 model = models[0].cuda()
 
 print(model)
@@ -175,8 +194,8 @@ print(model)
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_metadata_fold.csv')
 # aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X[X['fold'] == 4], 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_train/public_train_audio_files/', 'assessment_result', offset=0)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
-coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid', offset=4)
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/df_fold.csv')
+# coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 0], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/coswara/Coswara-Data_0511/', 'label_covid', offset=4)
 
 
 # X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_maj.csv')
@@ -199,6 +218,11 @@ coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'fi
 # res = X.copy()
 # aicvvn_test_set_inp, aicvvn_test_set_out = load_dataset(X, 'uuid', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv115m_final_public_test/public_test_audio_files/', 'assessment_result', offset=0)
 
+
+# NOTE: For ICBHI dataset
+icbhi_inp, icbhi_out = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_unnormalized_log_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'])
+# icbhi_inp, icbhi_out = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['valid'])
+
 # test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp, *sounddr_test_set_inp, *aicvvn_new_test_set_inp]
 # test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out, sounddr_test_set_out, aicvvn_new_test_set_out))
 
@@ -209,8 +233,8 @@ coswara_test_set_inp, coswara_test_set_out = load_dataset(X[X['fold'] == 4], 'fi
 # test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
 
 
-test_set_inp = [*coswara_test_set_inp]
-test_set_out = np.array(coswara_test_set_out)
+test_set_inp = [*icbhi_inp]
+test_set_out = np.array(icbhi_out)
 
 # # NOTE: For urban8k
 # X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
@@ -230,10 +254,32 @@ model.eval()
 model.encoder.eval()
 model.decoder.eval()
 
+print("MODEL PARAMETERS: ")
+# for parameter in model.parameters():
+#     print(parameter)
+num_params = sum(param.numel() for param in model.parameters())
+print(num_params)
+
 # NOTE: for evaluating profiling model:
 # pretrained_models, _ = checkpoint_utils.load_model_ensemble(['/media/SSD/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'])
 # pretrained_model = pretrained_models[0].cuda()
 # pretrained_model.eval()
+
+# def cross_entropy(X,y):
+#     """
+#     X is the output from fully connected layer (num_examples x num_classes)
+#     y is labels (num_examples x 1)
+#     	Note that y is not one-hot encoded vector. 
+#     	It can be computed as y.argmax(axis=1) from one-hot encoded vectors of labels if required.
+#     """
+#     m = y.shape[0]
+#     # We use multidimensional array indexing to extract 
+#     # softmax probability of the correct label for each sample.
+#     # Refer to https://docs.scipy.org/doc/numpy/user/basics.indexing.html#indexing-multi-dimensional-arrays for understanding multidimensional array indexing.
+#     log_likelihood = -np.log(X[range(m),y])
+#     loss = np.sum(log_likelihood) / m
+#     return loss
+# ces = []
 
 for inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
@@ -242,7 +288,16 @@ for inputs, labels, lengths in dataloader:
 
     encoder_out = model.encoder(inputs, lengths)
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-    outputs = model.decoder(encoder_out['encoder_out'])
+    # outputs = model.decoder(encoder_out['encoder_out'])
+
+    outputs = F.softmax(model.decoder(encoder_out['encoder_out']), dim=1)
+
+    # ce_predict = outputs.detach().cpu().numpy()
+    # ce_target = labels.detach().cpu().numpy()
+    # ces.append(cross_entropy(ce_predict, ce_target))
+
+    # NOTE: For ICBHI dataset:
+    pred_array.append(int(outputs.argmax(dim=1).detach().cpu().numpy().squeeze()))
 
     # NOTE: for evaluating profiling model:
     # with torch.no_grad():
@@ -255,10 +310,10 @@ for inputs, labels, lengths in dataloader:
     # decoder_input = torch.cat((encoder_out['encoder_out'], pretrained_output), dim=1)
     # outputs = model.decoder(decoder_input)
 
-    if outputs.detach().cpu().numpy().shape[0] == 1:
-        pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
-    else:
-        pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
+    # if outputs.detach().cpu().numpy().shape[0] == 1:
+    #     pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
+    # else:
+    #     pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
 
     # #NOTE: For Urban8k
     # # print("PREDICTION ARRAY SHAPE: ", outputs.detach().cpu().numpy().shape)
@@ -271,4 +326,38 @@ for inputs, labels, lengths in dataloader:
 
 # res.to_csv('results.csv', index=False)
 
-print(evaluate(pred_array, target_array))
+# print(evaluate(pred_array, target_array))
+
+def get_score(hits, counts):
+    se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
+    sp = hits[0] / counts[0]
+    print("SENSE: ", se)
+    print("SPEC: ", sp)
+    sc = (se+sp) / 2.0
+    return sc
+
+class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
+class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
+for idx in range(len(target_array)):
+    class_counts[target_array[idx]] += 1.0
+    if pred_array[idx] == target_array[idx]:
+        class_hits[target_array[idx]] += 1.0
+
+from sklearn.metrics import confusion_matrix
+print(class_counts)
+print("Accuracy: ", accuracy_score(target_array, pred_array))
+conf_matrix = confusion_matrix(target_array, pred_array)
+print(conf_matrix)
+conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:,np.newaxis]
+print("Classwise Scores", conf_matrix.diagonal())
+print(get_score(class_hits, class_counts))
+
+
+# import matplotlib.pyplot as plt
+# ces = np.array(ces)
+# q25, q75 = np.percentile(ces, [25, 75])
+# bin_width = 2 * (q75 - q25) * len(ces) ** (-1/3)
+# bins = round((ces.max() - ces.min()) / bin_width)
+# print("Freedman–Diaconis number of bins:", bins)
+# fig = plt.hist(ces, bins=bins)
+# plt.savefig('cross_entropy_loss_train.png')

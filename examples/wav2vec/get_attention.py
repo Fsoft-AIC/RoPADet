@@ -9,7 +9,6 @@ import pandas as pd
 from sklearn.metrics import f1_score, confusion_matrix, roc_auc_score, auc, precision_recall_curve, roc_curve, average_precision_score, accuracy_score, precision_recall_fscore_support
 from collections import defaultdict
 from tqdm import tqdm
- 
 
 def load_dataset(X, file_path, dir_path, label, id, offset=4):
     X[file_path] = X[file_path].apply(lambda x: dir_path + str(x))
@@ -137,6 +136,13 @@ for ids, inputs, labels, lengths in tqdm(dataloader):
     with torch.no_grad():
         outs = model(inputs, lengths, features_only=True)
 
+    print("INPUT SHAPE: ", inputs.size())
+    print(len(outs['layer_results']))
+    print(outs['layer_results'][0][1])
+    print(outs['layer_results'][1][1].size())
+    import matplotlib.pyplot as plt
+    plt.imsave('test.png', outs['layer_results'][0][1].detach().cpu().numpy().squeeze())
+    break
     outputs = outs['x']
     outputs = outputs.squeeze()
     outputs = torch.mean(outputs, dim=0)
@@ -148,17 +154,17 @@ for ids, inputs, labels, lengths in tqdm(dataloader):
 # for key, val in profiles.items():
 #     counter[len(val)] += 1
 
-count = 0
-for key, val in profiles.items():
-    # if len(val) > 1:
-    #     print(key, len(val))
-    print(key, len(val))
-    count += len(val)
-    profiles[key] = torch.mean(torch.stack(val), dim=0)
-print(count)
+# count = 0
+# for key, val in profiles.items():
+#     # if len(val) > 1:
+#     #     print(key, len(val))
+#     print(key, len(val))
+#     count += len(val)
+#     profiles[key] = torch.mean(torch.stack(val), dim=0)
+# print(count)
 
-SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile.pt'
-print("Saving profiles to: ", SAVE_PATH)
-# print(counter)
+# SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile.pt'
+# print("Saving profiles to: ", SAVE_PATH)
+# # print(counter)
 
-torch.save(profiles, SAVE_PATH)
+# torch.save(profiles, SAVE_PATH)

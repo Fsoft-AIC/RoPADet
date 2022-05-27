@@ -250,6 +250,15 @@ class Wav2VecCtc(BaseFairseqModel):
 
 @dataclass
 class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
+    clf_hidden_dim: int = field(
+        default=128, metadata={'help': 'classifier head hidden dimension'}
+    )
+    clf_dropout_rate: float = field(
+        default=0.5, metadata={'help': 'classifier head dropout rate'}
+    )
+    clf_output_dim: int = field(
+        default=4, metadata={'help': 'classifier head output dimension'}
+    )
     decoder_embed_dim: int = field(
         default=256, metadata={"help": "decoder embedding dimension"}
     )
@@ -364,17 +373,26 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         # return TransformerDecoder(cfg, tgt_dict, embed_tokens)
         if task.cfg.profiling:
             model = torch.nn.Sequential(
-                torch.nn.Linear(512, 128),
+                torch.nn.Linear(cfg.decoder_embed_dim * 2, cfg.clf_hidden_dim*2),
+                torch.nn.BatchNorm1d(cfg.clf_hidden_dim*2),
                 torch.nn.ReLU(),
-                torch.nn.Dropout(p=0.1),
-                torch.nn.Linear(128, 2),
+                torch.nn.Dropout(p=cfg.clf_dropout_rate),
+                torch.nn.Linear(cfg.clf_hidden_dim*2, cfg.clf_output_dim),
             )
         else:
             model = torch.nn.Sequential(
-                torch.nn.Linear(cfg.decoder_embed_dim, 64),
-                torch.nn.ReLU(),
-                torch.nn.Dropout(p=0.1),
-                torch.nn.Linear(64, 2),
+                # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_hidden_dim),
+                # torch.nn.BatchNorm1d(cfg.clf_hidden_dim),
+                # torch.nn.ReLU(),
+                # # torch.nn.Tanh(),
+                # torch.nn.Dropout(p=cfg.clf_dropout_rate),
+                # torch.nn.Linear(cfg.clf_hidden_dim, cfg.clf_output_dim),
+                # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_hidden_dim),
+                # torch.nn.ReLU(),
+                # torch.nn.Dropout(p=cfg.clf_dropout_rate),
+                # torch.nn.Linear(cfg.clf_hidden_dim, cfg.clf_hidden_dim),
+                # torch.nn.ReLU(),
+                torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_output_dim),
             )
         return model
 

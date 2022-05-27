@@ -577,7 +577,8 @@ class Wav2Vec2Model(BaseFairseqModel):
 
         for i in range(len(conv_cfg_list)):
             input_lengths = _conv_out_length(
-                input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2]
+                input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2], conv_cfg_list[i][3]
+                # input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2]
             )
 
         return input_lengths.to(torch.long)
@@ -842,7 +843,6 @@ class Wav2Vec2Model(BaseFairseqModel):
                 l for i, l in enumerate(self.encoder.layers) if i <= last_layer
             )
 
-# TODO: Modify here
 class ConvFeatureExtractionModel(nn.Module):
     def __init__(
         self,
@@ -860,6 +860,7 @@ class ConvFeatureExtractionModel(nn.Module):
             n_out,
             k,
             dilate,
+            stride,
             is_layer_norm=False,
             is_group_norm=False,
             conv_bias=False,
@@ -868,7 +869,8 @@ class ConvFeatureExtractionModel(nn.Module):
                 ''' 1D Causal Convolution
                     Adapt from: https://github.com/pytorch/pytorch/issues/1333#issuecomment-296833927
                 '''
-                conv = nn.Conv1d(n_in, n_out, k, dilation=dilate, padding=0, stride=2, bias=conv_bias)
+                conv = nn.Conv1d(n_in, n_out, k, dilation=dilate, padding=0, stride=stride, bias=conv_bias)
+                # conv = nn.Conv1d(n_in, n_out, k, dilation=dilate, padding=0, stride=2, bias=conv_bias)
                 nn.init.kaiming_normal_(conv.weight)
                 return conv
 
@@ -899,12 +901,15 @@ class ConvFeatureExtractionModel(nn.Module):
             else:
                 return nn.Sequential(make_conv(), nn.Dropout(p=dropout), nn.GELU())
 
-        in_d = 128
+        in_d = 192
         self.conv_layers = nn.ModuleList()
         self.__padding = []
         for i, cl in enumerate(conv_layers):
-            assert len(cl) == 3, "invalid conv definition: " + str(cl)
-            (dim, k, dilate) = cl
+            assert len(cl) == 4, "invalid conv definition: " + str(cl)
+            (dim, k, dilate, stride) = cl
+            # assert len(cl) == 3, "invalid conv definition: " + str(cl)
+            # (dim, k, dilate) = cl
+            # stride = 2
             self.__padding.append((k - 1) * dilate)
 
             self.conv_layers.append(
@@ -913,6 +918,7 @@ class ConvFeatureExtractionModel(nn.Module):
                     dim,
                     k,
                     dilate,
+                    stride,
                     is_layer_norm=mode == "layer_norm",
                     is_group_norm=mode == "default" and i == 0,
                     conv_bias=conv_bias,
@@ -1280,7 +1286,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
                 value=x,
                 key_padding_mask=self_attn_padding_mask,
                 attn_mask=self_attn_mask,
-                need_weights=False,
+                need_weights=need_weights,
             )
             x = self.dropout1(x)
             x = residual + x
@@ -1301,7 +1307,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
                 key=x,
                 value=x,
                 key_padding_mask=self_attn_padding_mask,
-                need_weights=False,
+                need_weights=need_weights,
             )
 
             x = self.dropout1(x)

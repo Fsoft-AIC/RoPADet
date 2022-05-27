@@ -1,6 +1,7 @@
 import os
 import torch
 from torch.utils.data import Dataset, DataLoader
+import torch.nn.functional as F
 from fairseq import checkpoint_utils, data, options, tasks
 from fairseq.data import MelAudioDataset, AddTargetDataset, Dictionary
 from fairseq.data.text_compressor import TextCompressionLevel, TextCompressor
@@ -105,6 +106,26 @@ def load_dataset(X, file_path, dir_path, label, id, offset=4):
     return feats, X[label].values, X[id].values
 
 
+def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test']):
+    '''
+    dir_path: directory to fairseq meta data files
+    orig_dir: original directory that stored the spectrum
+    '''
+    feats = []
+    labels = []
+    profile_ids = []
+    for split in splits:
+        with open(os.path.join(dir_path, f'{split}.tsv')) as f, open(os.path.join(dir_path, f'{split}.label')) as label:
+            for line, label in zip(f.read().split('\n')[1:-1], label.read().split('\n')):
+                file_path, _, _, profile_id = line.split('\t')
+                spec = np.load(os.path.join(orig_dir, file_path))
+                feats.append(spec)
+                profile_ids.append(profile_id)
+                labels.append(int(label))
+
+    return feats, labels, profile_ids
+
+
 def collate_fn(data):
     """
        data: is a list of tuples with (example, label, length)
@@ -201,17 +222,27 @@ print(model)
 # # X['profile'] = X.apply(lambda row: row['subject_age'] + '_' + row['subject_gender'], axis=1)
 
 # ids = list(X[X['fold'] == 0]['profile'])
-profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/profile.pt')
+# NOTE: For ICBHI dataset
+profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-05-16/21-12-58/checkpoints/profile.pt')
+icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_unnormalized_log', '/media/SSD/tungtk2/RespireNet', splits=['test'])
+# profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-05-20/22-37-59/checkpoints/profile.pt')
+# icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['test'])
+test_set_inp = [*icbhi_inp]
+test_set_out = np.array(icbhi_out)
+test_set_id = np.array(icbhi_id)
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_min.csv')
-aicovidvn_new_min_inp, aicovidvn_new_min_out, aicovidvn_new_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label', 'id')
 
-X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
-sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
+# profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/profile.pt')
 
-test_set_inp = [*sounddr_min_inp, *aicovidvn_new_min_inp]
-test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
-test_set_id = np.concatenate((sounddr_min_id, aicovidvn_new_min_id))
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_min.csv')
+# aicovidvn_new_min_inp, aicovidvn_new_min_out, aicovidvn_new_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label', 'id')
+
+# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
+# sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
+
+# test_set_inp = [*sounddr_min_inp, *aicovidvn_new_min_inp]
+# test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
+# test_set_id = np.concatenate((sounddr_min_id, aicovidvn_new_min_id))
 
 # # NOTE: For urban8k
 # X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
@@ -245,12 +276,15 @@ for ids, inputs, labels, lengths in dataloader:
 
     decoder_input = torch.cat((encoder_out['encoder_out'], profile), dim=1)
 
-    outputs = model.decoder(decoder_input)
+    outputs = F.softmax(model.decoder(decoder_input), dim=1)
 
-    if outputs.detach().cpu().numpy().shape[0] == 1:
-        pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
-    else:
-        pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
+    # NOTE: For ICBHI dataset:
+    pred_array.append(int(outputs.argmax(dim=1).detach().cpu().numpy().squeeze()))
+
+    # if outputs.detach().cpu().numpy().shape[0] == 1:
+    #     pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])
+    # else:
+    #     pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
 
     # #NOTE: For Urban8k
     # # print("PREDICTION ARRAY SHAPE: ", outputs.detach().cpu().numpy().shape)
@@ -263,4 +297,24 @@ for ids, inputs, labels, lengths in dataloader:
 
 # res.to_csv('results.csv', index=False)
 
-print(evaluate(pred_array, target_array))
+# print(evaluate(pred_array, target_array))
+
+def get_score(hits, counts):
+    se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
+    sp = hits[0] / counts[0]
+    print("SENSE: ", se)
+    print("SPEC: ", sp)
+    sc = (se+sp) / 2.0
+    return sc
+
+class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
+class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
+for idx in range(len(target_array)):
+    class_counts[target_array[idx]] += 1.0
+    if pred_array[idx] == target_array[idx]:
+        class_hits[target_array[idx]] += 1.0
+
+from sklearn.metrics import confusion_matrix
+print(class_counts)
+print(confusion_matrix(target_array, pred_array))
+print(get_score(class_hits, class_counts))

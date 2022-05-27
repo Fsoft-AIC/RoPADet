@@ -9,31 +9,41 @@ from dataclasses import dataclass, field
 
 import torch
 import torch.nn.functional as F
+from torch.autograd import Variable
 from fairseq import metrics, utils
 from fairseq.criterions import FairseqCriterion, register_criterion
 from fairseq.dataclass import FairseqDataclass
 from omegaconf import II
 
 from fairseq.EncoderContrastive import SupConLoss
+from typing import List
 
 
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
-    positive_class_weight: int = field(
-        default=1,
+    # positive_class_weight: int = field(
+    #     default=1,
+    #     metadata={
+    #         "help": "class weight for loss function, old method, not use now"
+    #     },
+    # )
+    class_weights: List[float] = field(
+        default_factory=lambda : [1],
         metadata={
-            "help": "class weight for loss function"
+            "help": "class weights for loss function"
         },
     )
 
 
 @register_criterion("cross_entropy", dataclass=CrossEntropyCriterionConfig)
 class CrossEntropyCriterion(FairseqCriterion):
-    def __init__(self, task, sentence_avg, positive_class_weight):
+    def __init__(self, task, sentence_avg, class_weights):
         super().__init__(task)
         self.sentence_avg = sentence_avg
-        self.positive_class_weight = positive_class_weight
+        # self.positive_class_weight = positive_class_weight
+        self.class_weights = class_weights
+
 
     def forward(self, model, sample, reduce=True):
         """Compute the loss for the given sample.
@@ -72,8 +82,8 @@ class CrossEntropyCriterion(FairseqCriterion):
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
             "ncorrect": (outputs[0] == outputs[1]).sum(),
-            "predicts": predicts,
-            # "predicts": outputs[0].detach().cpu().numpy().tolist(),
+            # "predicts": predicts,
+            "predicts": outputs[0].detach().cpu().numpy().tolist(),
             "targets": outputs[1].detach().cpu().numpy().tolist(),
         }
         # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
@@ -85,28 +95,38 @@ class CrossEntropyCriterion(FairseqCriterion):
 
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
-        target = model.get_targets(sample, net_output).view(-1)
-        # print("PREDICTION SHAPE: ", lprobs.shape)
+        preds = lprobs.argmax(dim=1)
+        target = model.get_targets(sample, net_output).view(-1, 1)
+        # print("PREDICTION: ", lprobs)
         # print("TARGET SHAPE: ", target.shape)
         # print("PREDICTION TARGET: ", target)
         # print("PREDICTIONS: ", F.softmax(net_output, dim=1).max(dim=1)[0])
         # print("DIFF: ", torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2))
 
-        # weights = torch.tensor([3.0, 1.0, 1.0, 1.0], dtype=torch.float32)
-        # weights = weights / weights.sum()
-        # weights = 1.0 / weights
-        # weights = weights / weights.sum()
-        # weights = weights.cuda()
+        # weights = torch.tensor([3.0, 1.5, 0.7, 0.4])
+        weights = torch.tensor(self.class_weights)
+        weights = weights / weights.sum()
+        weights = 1.0 / weights
+        weights = weights / weights.sum()
+        weights = weights.cuda()
 
-        # NOTE: Log-likelihood loss
-        loss = F.nll_loss(
-            lprobs,
-            target,
-            # ignore_index=self.padding_idx,
-            reduction="sum" if reduce else "none",
-            weight=torch.tensor([1.0, self.positive_class_weight]).to('cuda'),
-            # weight=weights
-        )
+        # NOTE: FOCAL LOSS
+        # https://github.com/clcarwin/focal_loss_pytorch/blob/master/focalloss.py
+        lprobs = lprobs.gather(1, target)
+        lprobs = lprobs.view(-1)
+        pt = Variable(lprobs.data.exp())
+        at = weights.gather(0,target.data.view(-1))
+        lprobs = lprobs * Variable(at)
+        loss = -1 * (1-pt)**0.0 * lprobs
+
+        # loss = F.nll_loss(
+        #     lprobs,
+        #     target,
+        #     # ignore_index=self.padding_idx,
+        #     reduction="sum" if reduce else "none",
+        #     # weight=torch.tensor([1.0, self.positive_class_weight]).to('cuda'),
+        #     weight=weights
+        # )
 
         if model.auto_encoder:
             ae_loss = torch.nn.MSELoss()(ae_output, ae_input)
@@ -121,8 +141,7 @@ class CrossEntropyCriterion(FairseqCriterion):
         # # NOTE: Brier Score loss
         # loss = torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2)
 
-        preds = lprobs.argmax(dim=1)
-        return loss, (preds, target)
+        return loss.sum(), (preds, model.get_targets(sample, net_output).view(-1))
 
     @staticmethod
     def reduce_metrics(logging_outputs) -> None:

@@ -500,6 +500,8 @@ def validate(
             def get_score(hits, counts):
                 se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
                 sp = hits[0] / counts[0]
+                print("SENSE: ", se)
+                print("SPEC: ", sp)
                 sc = (se+sp) / 2.0
                 return sc
 
@@ -509,6 +511,11 @@ def validate(
                 class_counts[final_targets[idx]] += 1.0
                 if final_predicts[idx] == final_targets[idx]:
                     class_hits[final_targets[idx]] += 1.0
+            
+            from sklearn.metrics import confusion_matrix
+            print(class_counts)
+            print(confusion_matrix(final_targets, final_predicts))
+
             dct = agg.get_smoothed_values()
             dct[cfg.checkpoint.best_checkpoint_metric] = get_score(class_hits, class_counts)
             stats = get_valid_stats(cfg, trainer, dct)
