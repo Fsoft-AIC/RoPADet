@@ -63,9 +63,9 @@ print(model)
 
 
 # NOTE: For ICBHI dataset
-# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'], profiling=True)
-# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'], profiling=True)
-# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['valid'], profiling=True)
+# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'])
+# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'])
+# icbhi_inp, icbhi_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['valid'])
 
 # test_set_inp = [*coswara_test_set_inp]
 # test_set_out = np.array(coswara_test_set_out)
@@ -87,13 +87,9 @@ if args.input_file == 'majority':
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
 elif args.input_file == 'minority':
-    min_inp, min_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/profile_2048_128', '/media/Z/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
+    min_inp, min_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/profile_2048_128', '/media/Z/tungtk2/aicv115m_api_template/', ['test'])
     test_set_inp = [*min_inp]
     test_set_out = np.array(min_out)
-else:
-    w2g_a2_inp, w2g_a2_out, _ = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/w2g_a2_fold4', '/media/Z/tungtk2/aicv115m_api_template/', ['test'])
-    test_set_inp = [*w2g_a2_inp]
-    test_set_out = np.array(w2g_a2_out)
 
 test_dataset = MyDataset(test_set_inp, test_set_out)
 dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
@@ -108,6 +104,9 @@ print("MODEL PARAMETERS: ")
 num_params = sum(param.numel() for param in model.parameters())
 print(num_params)
 
+pretrained_models, _ = checkpoint_utils.load_model_ensemble(['/media/Z/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128_aicovidvn_fold4'})
+pretrained_model = pretrained_models[0].cuda()
+pretrained_model.eval()
 
 for inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
@@ -116,11 +115,28 @@ for inputs, labels, lengths in dataloader:
 
     encoder_out = model.encoder(inputs, lengths)
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
-    outputs = model.decoder(encoder_out['encoder_out'])
-    outputs = F.softmax(outputs, dim=1)
+    # outputs = model.decoder(encoder_out['encoder_out'])
+
+    # outputs = F.softmax(model.decoder(encoder_out['encoder_out']), dim=1)
+
+    # ce_predict = outputs.detach().cpu().numpy()
+    # ce_target = labels.detach().cpu().numpy()
+    # ces.append(cross_entropy(ce_predict, ce_target))
 
     # NOTE: For ICBHI dataset:
     # pred_array.append(int(outputs.argmax(dim=1).detach().cpu().numpy().squeeze()))
+
+    # NOTE: for evaluating profiling model:
+    with torch.no_grad():
+        pretrained_out = pretrained_model(inputs, lengths, features_only=True)
+    pretrained_output = pretrained_out['x'].squeeze()
+    pretrained_output = torch.mean(pretrained_output, dim=0)
+    pretrained_output = pretrained_output.unsqueeze(dim=0)
+    if len(pretrained_output.shape) == 1:
+        pretrained_output = encoder_out['encoder_out']
+    decoder_input = torch.cat((encoder_out['encoder_out'], pretrained_output), dim=1)
+    outputs = model.decoder(decoder_input)
+    outputs = F.softmax(outputs, dim=1)
 
     if outputs.detach().cpu().numpy().shape[0] == 1:
         pred_array.extend([outputs.detach().cpu().numpy().squeeze()[1]])

@@ -486,15 +486,17 @@ def validate(
                     break
                 logging_output = trainer.valid_step(sample)
                 if cfg.checkpoint.best_checkpoint_metric in ['auc', 'icbhi']:
+                    # print("PREDICTS: ", final_predicts)
+                    # print("TARGETS: ", final_targets)
                     final_targets.extend(logging_output["targets"])
                     final_predicts.extend(logging_output["predicts"])
 
         # log validation stats
+        from sklearn.metrics import roc_auc_score
         if cfg.checkpoint.best_checkpoint_metric == 'auc':
-            from sklearn.metrics import roc_auc_score
-
             dct = agg.get_smoothed_values()
-            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
+            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, average='micro')
+            # dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
             stats = get_valid_stats(cfg, trainer, dct)
         elif cfg.checkpoint.best_checkpoint_metric == 'icbhi':
             def get_score(hits, counts):
@@ -504,6 +506,9 @@ def validate(
                 print("SPEC: ", sp)
                 sc = (se+sp) / 2.0
                 return sc
+
+            final_predicts_onehot = final_predicts
+            final_predicts = [predict.index(max(predict)) for predict in final_predicts]
 
             class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
             class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
@@ -518,6 +523,8 @@ def validate(
 
             dct = agg.get_smoothed_values()
             dct[cfg.checkpoint.best_checkpoint_metric] = get_score(class_hits, class_counts)
+            dct['auc_ovr'] = roc_auc_score(final_targets, final_predicts_onehot, multi_class='ovr')
+            dct['auc_ovo'] = roc_auc_score(final_targets, final_predicts_onehot, multi_class='ovo')
             stats = get_valid_stats(cfg, trainer, dct)
         else:
             stats = get_valid_stats(cfg, trainer, agg.get_smoothed_values())

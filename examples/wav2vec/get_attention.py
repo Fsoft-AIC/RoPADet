@@ -112,7 +112,8 @@ print(model)
 # X_sounddr_min = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
 # sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X_sounddr_min, 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
 
-icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['train', 'valid'])
+# icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['train', 'valid'])
+icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['valid'])
 
 # test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
 # test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
@@ -125,46 +126,47 @@ test_dataset = MyDataset(test_set_id, test_set_inp, test_set_out)
 dataloader = DataLoader(test_dataset, batch_size=1, shuffle=False, num_workers=4, collate_fn=collate_fn)
 
 model.eval()
+# model.encoder.eval()
+# model.decoder.eval()
+# model = model.encoder
 
-profiles = defaultdict(list)
+import matplotlib.pyplot as plt
+count = 0
+attentions = [0]*4
 
 for ids, inputs, labels, lengths in tqdm(dataloader):
     inputs = inputs.to('cuda', dtype=torch.float)
     labels = labels.to('cuda')
     lengths = lengths.unsqueeze(dim=1).to('cuda')
 
+    # if labels.data!=2:
+    #     continue
+
     with torch.no_grad():
         outs = model(inputs, lengths, features_only=True)
 
-    print("INPUT SHAPE: ", inputs.size())
-    print(len(outs['layer_results']))
-    print(outs['layer_results'][0][1])
-    print(outs['layer_results'][1][1].size())
-    import matplotlib.pyplot as plt
-    plt.imsave('test.png', outs['layer_results'][0][1].detach().cpu().numpy().squeeze())
-    break
-    outputs = outs['x']
-    outputs = outputs.squeeze()
-    outputs = torch.mean(outputs, dim=0)
-    # print(outputs)
-    # NOTE: only works for batch size = 1
-    profiles[ids[0]].append(outputs)
+    for layer in range(len(outs['layer_results'])):
+        if layer==0:
+            print(outs['layer_results'][layer][1].shape)
+            attentions[count] = outs['layer_results'][layer][1].detach().cpu().numpy().squeeze()
+            print(attentions[count].shape, count)
+            lst = []
+            for i in range(attentions[count].shape[0]):
+                shp = attentions[count][i,:,:].shape[0]
+                lst.extend([-0.1*np.ones((int(shp/5), shp)), attentions[count][i,:,:]])
+            attentions[count] = np.concatenate(lst, axis=0)
+            # attentions[count] = attentions[count].reshape(attentions[count].shape[0]*attentions[count].shape[1], attentions[count].shape[2])
+        else:
+            temp_attention = outs['layer_results'][layer][1].detach().cpu().numpy().squeeze()
+            lst = []
+            for i in range(temp_attention.shape[0]):
+                lst.extend([-0.1*np.ones((int(temp_attention[i,:,:].shape[0]/5), temp_attention[i,:,:].shape[1])), temp_attention[i,:,:]])
+            temp_attention = np.concatenate(lst, axis=0)
+            # temp_attention = temp_attention.reshape(temp_attention.shape[0]*temp_attention.shape[1], temp_attention.shape[2])
+            attentions[count] = np.concatenate((attentions[count], -0.1*np.ones((attentions[count].shape[0], int(attentions[count].shape[0]/20))), temp_attention), axis=1)
+    count += 1
+    if count == 4:
+        break
 
-# counter = defaultdict(int)
-# for key, val in profiles.items():
-#     counter[len(val)] += 1
-
-# count = 0
-# for key, val in profiles.items():
-#     # if len(val) > 1:
-#     #     print(key, len(val))
-#     print(key, len(val))
-#     count += len(val)
-#     profiles[key] = torch.mean(torch.stack(val), dim=0)
-# print(count)
-
-# SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile.pt'
-# print("Saving profiles to: ", SAVE_PATH)
-# # print(counter)
-
-# torch.save(profiles, SAVE_PATH)
+for i in range(len(attentions)):
+    plt.imsave(f'attention_{i}.png', attentions[i], cmap='viridis')

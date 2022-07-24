@@ -17,17 +17,17 @@ from omegaconf import II
 
 from fairseq.EncoderContrastive import SupConLoss
 from typing import List
-
+import numpy as np
 
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
-    # positive_class_weight: int = field(
-    #     default=1,
-    #     metadata={
-    #         "help": "class weight for loss function, old method, not use now"
-    #     },
-    # )
+    positive_class_weight: int = field(
+        default=1,
+        metadata={
+            "help": "class weight for loss function, old method, not use now"
+        },
+    )
     class_weights: List[float] = field(
         default_factory=lambda : [1],
         metadata={
@@ -58,6 +58,10 @@ class CrossEntropyCriterion(FairseqCriterion):
             ae_input, ae_hidden_output, cnn_hidden_output, ae_output, temp_net_output = net_output
             loss, outputs = self.compute_loss(model, net_output, sample, reduce=reduce)
             net_output = temp_net_output
+        elif model.sup_contrast:
+            encoder_out, temp_net_output=net_output
+            loss, outputs, loss_components = self.compute_loss(model, net_output, sample, reduce=reduce)
+            net_output = temp_net_output
         else:
             loss, outputs = self.compute_loss(model, net_output, sample, reduce=reduce)
         sample_size = (
@@ -76,6 +80,24 @@ class CrossEntropyCriterion(FairseqCriterion):
         else:
             predicts = raw_predicts[:, 1].squeeze().tolist()
 
+        # NOTE: compute auc the normal way
+        # logging_output = {
+        #     "loss": loss.data,
+        #     "ntokens": sample["ntokens"],
+        #     "nsentences": sample["target"].size(0),
+        #     "sample_size": sample_size,
+        #     "ncorrect": (outputs[0] == outputs[1]).sum(),
+        #     # "predicts": predicts,
+        #     "predicts": outputs[2].detach().cpu().numpy().tolist(), # use this in case of multi-class
+        #     "targets": outputs[1].detach().cpu().numpy().tolist(),
+        # }
+
+        # #NOTE: compute auc in case of multi-class, follow anh Truong method
+        predicts = outputs[2].detach().cpu().numpy().ravel()
+        raw_targets = outputs[1].detach().cpu().numpy()
+        targets =  np.zeros((raw_targets.size, len(self.class_weights)))
+        targets[np.arange(raw_targets.size),raw_targets] = 1
+        targets = targets.ravel()
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
@@ -83,15 +105,22 @@ class CrossEntropyCriterion(FairseqCriterion):
             "sample_size": sample_size,
             "ncorrect": (outputs[0] == outputs[1]).sum(),
             # "predicts": predicts,
-            "predicts": outputs[0].detach().cpu().numpy().tolist(),
-            "targets": outputs[1].detach().cpu().numpy().tolist(),
+            "predicts": predicts,
+            "targets": targets
         }
+        
+        if model.sup_contrast:
+            logging_output["ce_loss"] = loss_components[0].data
+            logging_output["scl_loss"] = loss_components[1].data
         # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
         return loss, sample_size, logging_output
 
     def compute_loss(self, model, net_output, sample, reduce=True):
         if model.auto_encoder:
             ae_input, ae_hidden_output, cnn_hidden_output, ae_output, net_output = net_output
+
+        if model.sup_contrast:
+            encoder_out, net_output = net_output
 
         lprobs = model.get_normalized_probs(net_output, log_probs=True)
         lprobs = lprobs.view(-1, lprobs.size(-1))
@@ -117,7 +146,7 @@ class CrossEntropyCriterion(FairseqCriterion):
         pt = Variable(lprobs.data.exp())
         at = weights.gather(0,target.data.view(-1))
         lprobs = lprobs * Variable(at)
-        loss = -1 * (1-pt)**0.0 * lprobs
+        loss = -1 * (1-pt)**2.0 * lprobs
 
         # loss = F.nll_loss(
         #     lprobs,
@@ -141,18 +170,32 @@ class CrossEntropyCriterion(FairseqCriterion):
         # # NOTE: Brier Score loss
         # loss = torch.mean((target - F.softmax(net_output, dim=1).max(dim=1)[0])**2)
 
-        return loss.sum(), (preds, model.get_targets(sample, net_output).view(-1))
+        if model.sup_contrast:
+            dup_encoder_out = encoder_out.unsqueeze(1)
+            scl_loss = SupConLoss(temperature=0.7,contrast_mode='one',base_temperature=0.7)(dup_encoder_out,model.get_targets(sample,net_output).view(-1))
+            return 0.1*loss.sum()+0.9*scl_loss, (preds, model.get_targets(sample, net_output).view(-1), model.get_normalized_probs(net_output, log_probs=False)), (loss.sum(), scl_loss)
+            return scl_loss, (preds, model.get_targets(sample, net_output).view(-1)), (loss.sum(), scl_loss)
+
+        return loss.sum(), (preds, model.get_targets(sample, net_output).view(-1), model.get_normalized_probs(net_output, log_probs=False))
 
     @staticmethod
     def reduce_metrics(logging_outputs) -> None:
         """Aggregate logging outputs from data parallel training."""
         loss_sum = sum(log.get("loss", 0) for log in logging_outputs)
+        ce_loss_sum = sum(log.get("ce_loss", 0) for log in logging_outputs)
+        scl_loss_sum = sum(log.get("scl_loss", 0) for log in logging_outputs)
         ntokens = sum(log.get("ntokens", 0) for log in logging_outputs)
         sample_size = sum(log.get("sample_size", 0) for log in logging_outputs)
 
         # we divide by log(2) to convert the loss from base e to base 2
         metrics.log_scalar(
             "loss", loss_sum / sample_size / math.log(2), sample_size, round=3
+        )
+        metrics.log_scalar(
+            "ce_loss", ce_loss_sum / sample_size / math.log(2), sample_size, round=3
+        )
+        metrics.log_scalar(
+            "scl_loss", scl_loss_sum / sample_size / math.log(2), sample_size, round=3
         )
         if sample_size != ntokens:
             metrics.log_scalar(

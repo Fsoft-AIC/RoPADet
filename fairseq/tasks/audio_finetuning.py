@@ -51,6 +51,10 @@ class AudioFinetuningConfig(STFTAudioPretrainingConfig):
         default=False,
         metadata={"help": "if set, add auto encoder branch to downstream model"},
     )
+    sup_contrast: bool = field(
+        default=False,
+        metadata={"help": "if set, add supervised contrastive loss"},
+    )
     # Options for reporting WER metrics during validation. Only applicable to
     # Seq2Seq models during fine-tuning
     eval_wer: bool = field(

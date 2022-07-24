@@ -577,8 +577,7 @@ class Wav2Vec2Model(BaseFairseqModel):
 
         for i in range(len(conv_cfg_list)):
             input_lengths = _conv_out_length(
-                input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2], conv_cfg_list[i][3]
-                # input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2]
+                input_lengths, conv_cfg_list[i][1], conv_cfg_list[i][2], 2 if len(conv_cfg_list[i]) == 3 else conv_cfg_list[i][3]
             )
 
         return input_lengths.to(torch.long)
@@ -901,12 +900,16 @@ class ConvFeatureExtractionModel(nn.Module):
             else:
                 return nn.Sequential(make_conv(), nn.Dropout(p=dropout), nn.GELU())
 
-        in_d = 192
+        in_d = 128
         self.conv_layers = nn.ModuleList()
         self.__padding = []
         for i, cl in enumerate(conv_layers):
-            assert len(cl) == 4, "invalid conv definition: " + str(cl)
-            (dim, k, dilate, stride) = cl
+            # assert len(cl) == 4, "invalid conv definition: " + str(cl)
+            if len(cl) == 4:
+                (dim, k, dilate, stride) = cl
+            else:
+                (dim, k, dilate) = cl
+                stride = 2
             # assert len(cl) == 3, "invalid conv definition: " + str(cl)
             # (dim, k, dilate) = cl
             # stride = 2
@@ -1287,6 +1290,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
                 key_padding_mask=self_attn_padding_mask,
                 attn_mask=self_attn_mask,
                 need_weights=need_weights,
+                # need_head_weights=need_weights
             )
             x = self.dropout1(x)
             x = residual + x
@@ -1308,6 +1312,7 @@ class TransformerSentenceEncoderLayer(nn.Module):
                 value=x,
                 key_padding_mask=self_attn_padding_mask,
                 need_weights=need_weights,
+                # need_head_weights=need_weights
             )
 
             x = self.dropout1(x)
