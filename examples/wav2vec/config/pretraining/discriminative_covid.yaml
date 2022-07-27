@@ -4,7 +4,7 @@ common:
   fp16: true
   log_format: json
   log_interval: 200
-  wandb_project: wav2vec2_icbhi_pretrain
+  wandb_project: wav2vec2_covid_pretrain
 
 checkpoint:
   save_interval_updates: 25000
@@ -26,7 +26,7 @@ dataset:
   skip_invalid_size_inputs_valid_test: true
 
 distributed_training:
-  distributed_world_size: 2
+  distributed_world_size: 1
   ddp_backend: legacy_ddp
 
 criterion:
@@ -63,6 +63,9 @@ model:
   encoder_layers: 2
   encoder_attention_heads: 2
   conv_feature_layers: "[(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
-  # conv_feature_layers: "[(512, 5, 1, 1)] + [(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
+  num_negatives: 20
+  negatives_from_everywhere: true
+  cross_sample_negatives: 80
+
   # conv_feature_layers: "[(128, 3, 1, 1)] + [(128, 3, 1, 2)] + [(128, 3, 1, 1)] + [(192, 3, 2, 1)] + [(192, 3, 2, 2)] + [(192, 3, 2, 1)] + [(256, 3, 2, 1)] + [(256, 3, 4, 2)] + [(256, 3, 2, 1)]"
   # conv_feature_layers: "[(192, 3, 1, 1)] + [(192, 3, 1, 2)] + [(192, 3, 1, 1)] + [(256, 3, 2, 1)] + [(256, 3, 2, 2)] + [(256, 3, 2, 1)] + [(384, 3, 2, 1)] + [(384, 3, 4, 2)] + [(384, 3, 2, 1)]"

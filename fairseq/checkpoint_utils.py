@@ -62,7 +62,6 @@ def save_checkpoint(cfg: CheckpointConfig, trainer, epoch_itr, val_loss):
     updates = trainer.get_num_updates()
 
     logger.info(f"Preparing to save checkpoint for epoch {epoch} @ {updates} updates")
-
     def is_better(a, b):
         return a >= b if cfg.maximize_best_checkpoint_metric else a <= b
 

@@ -22,12 +22,12 @@ import numpy as np
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
-    positive_class_weight: int = field(
-        default=1,
-        metadata={
-            "help": "class weight for loss function, old method, not use now"
-        },
-    )
+    # positive_class_weight: int = field(
+    #     default=1,
+    #     metadata={
+    #         "help": "class weight for loss function, old method, not use now"
+    #     },
+    # )
     class_weights: List[float] = field(
         default_factory=lambda : [1],
         metadata={
