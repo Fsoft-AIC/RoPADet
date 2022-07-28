@@ -251,13 +251,13 @@ class Wav2VecCtc(BaseFairseqModel):
 @dataclass
 class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
     clf_hidden_dim: int = field(
-        default=128, metadata={'help': 'classifier head hidden dimension'}
+        default=64, metadata={'help': 'classifier head hidden dimension'}
     )
     clf_dropout_rate: float = field(
-        default=0.5, metadata={'help': 'classifier head dropout rate'}
+        default=0.1, metadata={'help': 'classifier head dropout rate'}
     )
     clf_output_dim: int = field(
-        default=4, metadata={'help': 'classifier head output dimension'}
+        default=2, metadata={'help': 'classifier head output dimension'}
     )
     decoder_embed_dim: int = field(
         default=256, metadata={"help": "decoder embedding dimension"}
@@ -317,7 +317,7 @@ class Wav2Vec2Seq2SeqConfig(Wav2Vec2AsrConfig):
 
 @register_model("wav2vec_seq2seq", dataclass=Wav2Vec2Seq2SeqConfig)
 class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
-    def __init__(self, encoder, decoder, users_profile, auto_encoder):
+    def __init__(self, encoder, decoder, users_profile, auto_encoder, sup_contrast):
         super().__init__()
 
         self.encoder = encoder
@@ -326,13 +326,15 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
 
         self.auto_encoder = auto_encoder
         if self.auto_encoder:
-            self.ae = AutoEncoder(input_dim=128)
-            self.ae2hidden = nn.Linear(8, 256)
-            self.cnn2hidden = nn.Linear(256, 256)
+            self.ae = AutoEncoder(input_dim=192)
+            self.ae2hidden = nn.Linear(8, 384)
+            self.cnn2hidden = nn.Linear(384,384)
             # self.hidden = nn.Sequential(
             #     nn.Linear(256, 256), nn.ReLU(),
             #     nn.Linear(256, 256)
             # )
+
+        self.sup_contrast = sup_contrast
 
     @classmethod
     def build_model(cls, cfg: Wav2Vec2Seq2SeqConfig, task: FairseqTask):
@@ -358,11 +360,14 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
 
         decoder = cls.build_decoder(cfg, task)
         if task.cfg.profiling:
-            users_profile = torch.load(task.cfg.profiles_path)
+            try:
+                users_profile = torch.load(task.cfg.profiles_path)
+            except Exception as _:
+                users_profile = torch.load(task.cfg.profiles_path.replace('SSD', 'data'))
         else:
             users_profile = None
 
-        return Wav2Vec2Seq2SeqModel(encoder, decoder, users_profile, task.cfg.auto_encoder)
+        return Wav2Vec2Seq2SeqModel(encoder, decoder, users_profile, task.cfg.auto_encoder, task.cfg.sup_contrast)
 
     @classmethod
     def build_encoder(cls, cfg: Wav2Vec2AsrConfig):
@@ -374,25 +379,26 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         if task.cfg.profiling:
             model = torch.nn.Sequential(
                 torch.nn.Linear(cfg.decoder_embed_dim * 2, cfg.clf_hidden_dim*2),
-                torch.nn.BatchNorm1d(cfg.clf_hidden_dim*2),
+                # torch.nn.BatchNorm1d(cfg.clf_hidden_dim*2),
                 torch.nn.ReLU(),
                 torch.nn.Dropout(p=cfg.clf_dropout_rate),
                 torch.nn.Linear(cfg.clf_hidden_dim*2, cfg.clf_output_dim),
+                # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_output_dim),
             )
         else:
             model = torch.nn.Sequential(
-                # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_hidden_dim),
+                torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_hidden_dim),
                 # torch.nn.BatchNorm1d(cfg.clf_hidden_dim),
-                # torch.nn.ReLU(),
-                # # torch.nn.Tanh(),
-                # torch.nn.Dropout(p=cfg.clf_dropout_rate),
-                # torch.nn.Linear(cfg.clf_hidden_dim, cfg.clf_output_dim),
+                torch.nn.ReLU(),
+                ## torch.nn.Tanh(),
+                torch.nn.Dropout(p=cfg.clf_dropout_rate),
+                torch.nn.Linear(cfg.clf_hidden_dim, cfg.clf_output_dim),
                 # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_hidden_dim),
                 # torch.nn.ReLU(),
                 # torch.nn.Dropout(p=cfg.clf_dropout_rate),
                 # torch.nn.Linear(cfg.clf_hidden_dim, cfg.clf_hidden_dim),
                 # torch.nn.ReLU(),
-                torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_output_dim),
+                # torch.nn.Linear(cfg.decoder_embed_dim, cfg.clf_output_dim),
             )
         return model
 
@@ -420,7 +426,24 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
         # else:
         #     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
 
-        encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
+        # NOTE: old method, with bugs when there is padding
+        # because of unequal input shape
+        # encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
+
+        # NOTE: new method
+        # mean pooling over time
+        encoder_padding_mask = encoder_out["padding_mask"]  # B x T
+        encoder_output = encoder_out['encoder_out']
+        # encoder_out = preds[0].transpose(0, 1)    # B x T x C
+        if encoder_padding_mask is not None:
+            # preds = preds.clone()  # required because of transpose above
+            encoder_output[encoder_padding_mask] = 0
+            ntokens = torch.sum(~encoder_padding_mask, dim=1, keepdim=True)
+            encoder_out['encoder_out'] = torch.sum(encoder_output, dim=1) / ntokens.type_as(encoder_output)
+        else:
+            encoder_out['encoder_out'] = torch.mean(encoder_output, dim=1)
+
+        encoder_out['encoder_out'] = encoder_out['encoder_out'].squeeze()
 
         if self.users_profile:
             profiles_id = kwargs['profile']
@@ -434,6 +457,7 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
             profiles_tensor = torch.stack(profiles).to(encoder_out['encoder_out'].get_device())
 
             decoder_input = torch.cat((encoder_out['encoder_out'], profiles_tensor), dim=1)
+            # decoder_input = encoder_out['encoder_out'] + encoder_out['encoder_out'] * F.softmax(profiles_tensor, dim=1)
         else:
             decoder_input = encoder_out['encoder_out']
 
@@ -458,6 +482,8 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
             ae_output = self.ae.output(self.ae.decoder(ae_bottleneck))
             return ae_input, ae_hidden_output, cnn_hidden_output, ae_output, self.decoder(decoder_input)
 
+        if self.sup_contrast:
+            return F.normalize(decoder_input, dim=1), self.decoder(decoder_input)
         # print("DECODER INPUT SHAPE: ", decoder_input.shape)
 
         decoder_out = self.decoder(decoder_input)
@@ -498,7 +524,10 @@ class Wav2VecEncoder(FairseqEncoder):
         }
 
         if cfg.w2v_args is None:
-            state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path, arg_overrides)
+            try:
+                state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path, arg_overrides)
+            except Exception as _:
+                state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path.replace('SSD', 'data'), arg_overrides)
             w2v_args = state.get("cfg", None)
             if w2v_args is None:
                 w2v_args = convert_namespace_to_omegaconf(state["args"])

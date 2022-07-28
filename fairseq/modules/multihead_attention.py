@@ -323,6 +323,7 @@ class MultiheadAttention(nn.Module):
                 key_padding_mask,
                 need_weights,
                 attn_mask,
+                # average_attn_weights=not need_head_weights,
                 use_separate_proj_weight=True,
                 q_proj_weight=self.q_proj.weight,
                 k_proj_weight=self.k_proj.weight,

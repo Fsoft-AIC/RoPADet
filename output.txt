@@ -1,0 +1,2917 @@
+DATASET:  majority
+2022-07-20/19-11-47
+
+AUC score:       0.4270
+
+Confusion Matrix : 
+ [[153 131]
+ [ 30  15]]
+
+=============
+Precision    :       0.1027
+Recall :       0.3333
+F1 Score :       0.1571
+
+=============
+Accuracy    :       0.5106
+Brier Score :       0.4894
+
+
+DATASET:  minority
+2022-07-20/19-11-47
+
+AUC score:       0.7872
+
+Confusion Matrix : 
+ [[29 18]
+ [19 61]]
+
+=============
+Precision    :       0.7722
+Recall :       0.7625
+F1 Score :       0.7673
+
+=============
+Accuracy    :       0.7087
+Brier Score :       0.2913
+
+
+DATASET:  majority
+2022-07-20/19-24-55
+
+AUC score:       0.4415
+
+Confusion Matrix : 
+ [[132 152]
+ [ 23  22]]
+
+=============
+Precision    :       0.1264
+Recall :       0.4889
+F1 Score :       0.2009
+
+=============
+Accuracy    :       0.4681
+Brier Score :       0.5319
+
+
+DATASET:  minority
+2022-07-20/19-24-55
+
+AUC score:       0.5564
+
+Confusion Matrix : 
+ [[19 28]
+ [20 60]]
+
+=============
+Precision    :       0.6818
+Recall :       0.7500
+F1 Score :       0.7143
+
+=============
+Accuracy    :       0.6220
+Brier Score :       0.3780
+
+
+DATASET:  majority
+2022-07-20/19-31-23
+
+AUC score:       0.4182
+
+Confusion Matrix : 
+ [[156 128]
+ [ 29  16]]
+
+=============
+Precision    :       0.1111
+Recall :       0.3556
+F1 Score :       0.1693
+
+=============
+Accuracy    :       0.5228
+Brier Score :       0.4772
+
+
+DATASET:  minority
+2022-07-20/19-31-23
+
+AUC score:       0.6471
+
+Confusion Matrix : 
+ [[28 19]
+ [21 59]]
+
+=============
+Precision    :       0.7564
+Recall :       0.7375
+F1 Score :       0.7468
+
+=============
+Accuracy    :       0.6850
+Brier Score :       0.3150
+
+
+DATASET:  majority
+2022-07-20/19-38-04
+
+AUC score:       0.4035
+
+Confusion Matrix : 
+ [[100 184]
+ [ 17  28]]
+
+=============
+Precision    :       0.1321
+Recall :       0.6222
+F1 Score :       0.2179
+
+=============
+Accuracy    :       0.3891
+Brier Score :       0.6109
+
+
+DATASET:  minority
+2022-07-20/19-38-04
+
+AUC score:       0.6904
+
+Confusion Matrix : 
+ [[20 27]
+ [ 7 73]]
+
+=============
+Precision    :       0.7300
+Recall :       0.9125
+F1 Score :       0.8111
+
+=============
+Accuracy    :       0.7323
+Brier Score :       0.2677
+
+
+DATASET:  majority
+2022-07-20/19-44-31
+
+AUC score:       0.4319
+
+Confusion Matrix : 
+ [[123 161]
+ [ 24  21]]
+
+=============
+Precision    :       0.1154
+Recall :       0.4667
+F1 Score :       0.1850
+
+=============
+Accuracy    :       0.4377
+Brier Score :       0.5623
+
+
+DATASET:  minority
+2022-07-20/19-44-31
+
+AUC score:       0.6367
+
+Confusion Matrix : 
+ [[19 28]
+ [13 67]]
+
+=============
+Precision    :       0.7053
+Recall :       0.8375
+F1 Score :       0.7657
+
+=============
+Accuracy    :       0.6772
+Brier Score :       0.3228
+
+
+DATASET:  minority
+2022-07-20/19-50-53
+
+AUC score:       0.6431
+
+Confusion Matrix : 
+ [[23 24]
+ [13 67]]
+
+=============
+Precision    :       0.7363
+Recall :       0.8375
+F1 Score :       0.7836
+
+=============
+Accuracy    :       0.7087
+Brier Score :       0.2913
+
+
+DATASET:  majority
+2022-07-20/19-50-53
+
+AUC score:       0.4294
+
+Confusion Matrix : 
+ [[140 144]
+ [ 27  18]]
+
+=============
+Precision    :       0.1111
+Recall :       0.4000
+F1 Score :       0.1739
+
+=============
+Accuracy    :       0.4802
+Brier Score :       0.5198
+
+
+DATASET:  minority
+2022-07-20/19-57-11
+
+AUC score:       0.6763
+
+Confusion Matrix : 
+ [[17 30]
+ [15 65]]
+
+=============
+Precision    :       0.6842
+Recall :       0.8125
+F1 Score :       0.7429
+
+=============
+Accuracy    :       0.6457
+Brier Score :       0.3543
+
+
+DATASET:  majority
+2022-07-20/19-57-11
+
+AUC score:       0.4660
+
+Confusion Matrix : 
+ [[127 157]
+ [ 23  22]]
+
+=============
+Precision    :       0.1229
+Recall :       0.4889
+F1 Score :       0.1964
+
+=============
+Accuracy    :       0.4529
+Brier Score :       0.5471
+
+
+DATASET:  minority
+2022-07-20/20-03-55
+
+AUC score:       0.6255
+
+Confusion Matrix : 
+ [[23 24]
+ [24 56]]
+
+=============
+Precision    :       0.7000
+Recall :       0.7000
+F1 Score :       0.7000
+
+=============
+Accuracy    :       0.6220
+Brier Score :       0.3780
+
+
+DATASET:  majority
+2022-07-20/20-03-55
+
+AUC score:       0.4017
+
+Confusion Matrix : 
+ [[169 115]
+ [ 33  12]]
+
+=============
+Precision    :       0.0945
+Recall :       0.2667
+F1 Score :       0.1395
+
+=============
+Accuracy    :       0.5502
+Brier Score :       0.4498
+
+
+DATASET:  minority
+2022-07-20/20-10-51
+
+AUC score:       0.7165
+
+Confusion Matrix : 
+ [[21 26]
+ [10 70]]
+
+=============
+Precision    :       0.7292
+Recall :       0.8750
+F1 Score :       0.7955
+
+=============
+Accuracy    :       0.7165
+Brier Score :       0.2835
+
+
+DATASET:  majority
+2022-07-20/20-10-51
+
+AUC score:       0.4168
+
+Confusion Matrix : 
+ [[119 165]
+ [ 22  23]]
+
+=============
+Precision    :       0.1223
+Recall :       0.5111
+F1 Score :       0.1974
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-20/20-17-39
+
+AUC score:       0.7891
+
+Confusion Matrix : 
+ [[30 17]
+ [15 65]]
+
+=============
+Precision    :       0.7927
+Recall :       0.8125
+F1 Score :       0.8025
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-20/20-17-39
+
+AUC score:       0.4331
+
+Confusion Matrix : 
+ [[146 138]
+ [ 29  16]]
+
+=============
+Precision    :       0.1039
+Recall :       0.3556
+F1 Score :       0.1608
+
+=============
+Accuracy    :       0.4924
+Brier Score :       0.5076
+
+
+DATASET:  minority
+2022-07-25/19-45-20
+
+AUC score:       0.7391
+
+Confusion Matrix : 
+ [[26 21]
+ [16 64]]
+
+=============
+Precision    :       0.7529
+Recall :       0.8000
+F1 Score :       0.7758
+
+=============
+Accuracy    :       0.7087
+Brier Score :       0.2913
+
+
+DATASET:  majority
+2022-07-25/19-45-20
+
+AUC score:       0.3774
+
+Confusion Matrix : 
+ [[135 149]
+ [ 29  16]]
+
+=============
+Precision    :       0.0970
+Recall :       0.3556
+F1 Score :       0.1524
+
+=============
+Accuracy    :       0.4590
+Brier Score :       0.5410
+
+
+DATASET:  majority
+2022-07-25/19-57-18
+
+AUC score:       0.3800
+
+Confusion Matrix : 
+ [[147 137]
+ [ 34  11]]
+
+=============
+Precision    :       0.0743
+Recall :       0.2444
+F1 Score :       0.1140
+
+=============
+Accuracy    :       0.4802
+Brier Score :       0.5198
+
+
+DATASET:  minority
+2022-07-25/19-57-18
+
+AUC score:       0.8880
+
+Confusion Matrix : 
+ [[34 13]
+ [13 67]]
+
+=============
+Precision    :       0.8375
+Recall :       0.8375
+F1 Score :       0.8375
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-13/20-11-47
+
+AUC score:       0.4180
+
+Confusion Matrix : 
+ [[128 156]
+ [ 28  17]]
+
+=============
+Precision    :       0.0983
+Recall :       0.3778
+F1 Score :       0.1560
+
+=============
+Accuracy    :       0.4407
+Brier Score :       0.5593
+
+
+DATASET:  minority
+2022-07-13/20-11-47
+
+AUC score:       0.8343
+
+Confusion Matrix : 
+ [[25 22]
+ [11 69]]
+
+=============
+Precision    :       0.7582
+Recall :       0.8625
+F1 Score :       0.8070
+
+=============
+Accuracy    :       0.7402
+Brier Score :       0.2598
+
+
+DATASET:  majority
+2022-07-13/20-34-00
+
+AUC score:       0.4063
+
+Confusion Matrix : 
+ [[165 119]
+ [ 33  12]]
+
+=============
+Precision    :       0.0916
+Recall :       0.2667
+F1 Score :       0.1364
+
+=============
+Accuracy    :       0.5380
+Brier Score :       0.4620
+
+
+DATASET:  minority
+2022-07-13/20-34-00
+
+AUC score:       0.7122
+
+Confusion Matrix : 
+ [[25 22]
+ [22 58]]
+
+=============
+Precision    :       0.7250
+Recall :       0.7250
+F1 Score :       0.7250
+
+=============
+Accuracy    :       0.6535
+Brier Score :       0.3465
+
+
+DATASET:  majority
+2022-07-13/20-51-13
+
+AUC score:       0.4184
+
+Confusion Matrix : 
+ [[161 123]
+ [ 34  11]]
+
+=============
+Precision    :       0.0821
+Recall :       0.2444
+F1 Score :       0.1229
+
+=============
+Accuracy    :       0.5228
+Brier Score :       0.4772
+
+
+DATASET:  minority
+2022-07-13/20-51-13
+
+AUC score:       0.8178
+
+Confusion Matrix : 
+ [[35 12]
+ [14 66]]
+
+=============
+Precision    :       0.8462
+Recall :       0.8250
+F1 Score :       0.8354
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  minority
+2022-07-14/14-50-32
+
+AUC score:       0.7362
+
+Confusion Matrix : 
+ [[32 15]
+ [23 57]]
+
+=============
+Precision    :       0.7917
+Recall :       0.7125
+F1 Score :       0.7500
+
+=============
+Accuracy    :       0.7008
+Brier Score :       0.2992
+
+
+DATASET:  majority
+2022-07-14/14-50-32
+
+AUC score:       0.4039
+
+Confusion Matrix : 
+ [[158 126]
+ [ 32  13]]
+
+=============
+Precision    :       0.0935
+Recall :       0.2889
+F1 Score :       0.1413
+
+=============
+Accuracy    :       0.5198
+Brier Score :       0.4802
+
+
+DATASET:  minority
+2022-07-14/14-54-57
+
+AUC score:       0.6465
+
+Confusion Matrix : 
+ [[ 5 42]
+ [ 5 75]]
+
+=============
+Precision    :       0.6410
+Recall :       0.9375
+F1 Score :       0.7614
+
+=============
+Accuracy    :       0.6299
+Brier Score :       0.3701
+
+
+DATASET:  majority
+2022-07-14/14-54-57
+
+AUC score:       0.4307
+
+Confusion Matrix : 
+ [[ 34 250]
+ [  6  39]]
+
+=============
+Precision    :       0.1349
+Recall :       0.8667
+F1 Score :       0.2335
+
+=============
+Accuracy    :       0.2219
+Brier Score :       0.7781
+
+
+DATASET:  minority
+2022-07-14/15-21-30
+
+AUC score:       0.7880
+
+Confusion Matrix : 
+ [[22 25]
+ [11 69]]
+
+=============
+Precision    :       0.7340
+Recall :       0.8625
+F1 Score :       0.7931
+
+=============
+Accuracy    :       0.7165
+Brier Score :       0.2835
+
+
+DATASET:  majority
+2022-07-14/15-21-30
+
+AUC score:       0.4178
+
+Confusion Matrix : 
+ [[126 158]
+ [ 24  21]]
+
+=============
+Precision    :       0.1173
+Recall :       0.4667
+F1 Score :       0.1875
+
+=============
+Accuracy    :       0.4468
+Brier Score :       0.5532
+
+
+DATASET:  minority
+2022-07-14/14-58-32
+
+AUC score:       0.8003
+
+Confusion Matrix : 
+ [[22 25]
+ [ 8 72]]
+
+=============
+Precision    :       0.7423
+Recall :       0.9000
+F1 Score :       0.8136
+
+=============
+Accuracy    :       0.7402
+Brier Score :       0.2598
+
+
+DATASET:  majority
+2022-07-14/14-58-32
+
+AUC score:       0.4421
+
+Confusion Matrix : 
+ [[ 95 189]
+ [ 15  30]]
+
+=============
+Precision    :       0.1370
+Recall :       0.6667
+F1 Score :       0.2273
+
+=============
+Accuracy    :       0.3799
+Brier Score :       0.6201
+
+
+DATASET:  majority
+2022-07-25/19-57-18
+
+AUC score:       0.3787
+
+Confusion Matrix : 
+ [[144 140]
+ [ 34  11]]
+
+=============
+Precision    :       0.0728
+Recall :       0.2444
+F1 Score :       0.1122
+
+=============
+Accuracy    :       0.4711
+Brier Score :       0.5289
+
+
+DATASET:  minority
+2022-07-25/19-57-18
+
+AUC score:       0.8957
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  majority
+2022-07-25/20-08-21
+
+AUC score:       0.3818
+
+Confusion Matrix : 
+ [[106 178]
+ [ 26  19]]
+
+=============
+Precision    :       0.0964
+Recall :       0.4222
+F1 Score :       0.1570
+
+=============
+Accuracy    :       0.3799
+Brier Score :       0.6201
+
+
+DATASET:  minority
+2022-07-25/20-08-21
+
+AUC score:       0.8457
+
+Confusion Matrix : 
+ [[21 26]
+ [ 6 74]]
+
+=============
+Precision    :       0.7400
+Recall :       0.9250
+F1 Score :       0.8222
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-25/20-15-50
+
+AUC score:       0.3840
+
+Confusion Matrix : 
+ [[144 140]
+ [ 35  10]]
+
+=============
+Precision    :       0.0667
+Recall :       0.2222
+F1 Score :       0.1026
+
+=============
+Accuracy    :       0.4681
+Brier Score :       0.5319
+
+
+DATASET:  minority
+2022-07-25/20-15-50
+
+AUC score:       0.8830
+
+Confusion Matrix : 
+ [[33 14]
+ [16 64]]
+
+=============
+Precision    :       0.8205
+Recall :       0.8000
+F1 Score :       0.8101
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+
+DATASET:  majority
+2022-07-25/20-22-59
+
+AUC score:       0.3858
+
+Confusion Matrix : 
+ [[118 166]
+ [ 27  18]]
+
+=============
+Precision    :       0.0978
+Recall :       0.4000
+F1 Score :       0.1572
+
+=============
+Accuracy    :       0.4134
+Brier Score :       0.5866
+
+
+DATASET:  minority
+2022-07-25/20-22-59
+
+AUC score:       0.8649
+
+Confusion Matrix : 
+ [[26 21]
+ [ 8 72]]
+
+=============
+Precision    :       0.7742
+Recall :       0.9000
+F1 Score :       0.8324
+
+=============
+Accuracy    :       0.7717
+Brier Score :       0.2283
+
+
+DATASET:  majority
+2022-07-25/20-30-26
+
+AUC score:       0.3826
+
+Confusion Matrix : 
+ [[142 142]
+ [ 30  15]]
+
+=============
+Precision    :       0.0955
+Recall :       0.3333
+F1 Score :       0.1485
+
+=============
+Accuracy    :       0.4772
+Brier Score :       0.5228
+
+
+DATASET:  minority
+2022-07-25/20-30-26
+
+AUC score:       0.8564
+
+Confusion Matrix : 
+ [[27 20]
+ [10 70]]
+
+=============
+Precision    :       0.7778
+Recall :       0.8750
+F1 Score :       0.8235
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+DATASET:  majority
+2022-07-14/20-41-04
+
+AUC score:       0.3914
+
+Confusion Matrix : 
+ [[158 126]
+ [ 33  12]]
+
+=============
+Precision    :       0.0870
+Recall :       0.2667
+F1 Score :       0.1311
+
+=============
+Accuracy    :       0.5167
+Brier Score :       0.4833
+
+
+DATASET:  minority
+2022-07-14/20-41-04
+
+AUC score:       0.8114
+
+Confusion Matrix : 
+ [[27 20]
+ [16 64]]
+
+=============
+Precision    :       0.7619
+Recall :       0.8000
+F1 Score :       0.7805
+
+=============
+Accuracy    :       0.7165
+Brier Score :       0.2835
+
+
+DATASET:  majority
+2022-07-14/20-41-04
+
+AUC score:       0.3905
+
+Confusion Matrix : 
+ [[159 125]
+ [ 33  12]]
+
+=============
+Precision    :       0.0876
+Recall :       0.2667
+F1 Score :       0.1319
+
+=============
+Accuracy    :       0.5198
+Brier Score :       0.4802
+
+
+DATASET:  minority
+2022-07-14/20-41-04
+
+AUC score:       0.8114
+
+Confusion Matrix : 
+ [[27 20]
+ [16 64]]
+
+=============
+Precision    :       0.7619
+Recall :       0.8000
+F1 Score :       0.7805
+
+=============
+Accuracy    :       0.7165
+Brier Score :       0.2835
+
+
+DATASET:  majority
+2022-07-14/20-41-04
+
+AUC score:       0.3926
+
+Confusion Matrix : 
+ [[159 125]
+ [ 33  12]]
+
+=============
+Precision    :       0.0876
+Recall :       0.2667
+F1 Score :       0.1319
+
+=============
+Accuracy    :       0.5198
+Brier Score :       0.4802
+
+
+DATASET:  minority
+2022-07-14/20-41-04
+
+AUC score:       0.8114
+
+Confusion Matrix : 
+ [[27 20]
+ [16 64]]
+
+=============
+Precision    :       0.7619
+Recall :       0.8000
+F1 Score :       0.7805
+
+=============
+Accuracy    :       0.7165
+Brier Score :       0.2835
+
+
+DATASET:  majority
+2022-07-25/19-57-18
+
+AUC score:       0.3793
+
+Confusion Matrix : 
+ [[137 147]
+ [ 32  13]]
+
+=============
+Precision    :       0.0813
+Recall :       0.2889
+F1 Score :       0.1268
+
+=============
+Accuracy    :       0.4559
+Brier Score :       0.5441
+
+
+DATASET:  minority
+2022-07-25/19-57-18
+
+AUC score:       0.8880
+
+Confusion Matrix : 
+ [[34 13]
+ [13 67]]
+
+=============
+Precision    :       0.8375
+Recall :       0.8375
+F1 Score :       0.8375
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-25/19-57-18
+
+AUC score:       0.3811
+
+Confusion Matrix : 
+ [[135 149]
+ [ 32  13]]
+
+=============
+Precision    :       0.0802
+Recall :       0.2889
+F1 Score :       0.1256
+
+=============
+Accuracy    :       0.4498
+Brier Score :       0.5502
+
+
+DATASET:  minority
+2022-07-25/19-57-18
+
+AUC score:       0.8957
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  majority
+2022-07-25/20-08-21
+
+AUC score:       0.3810
+
+Confusion Matrix : 
+ [[110 174]
+ [ 26  19]]
+
+=============
+Precision    :       0.0984
+Recall :       0.4222
+F1 Score :       0.1597
+
+=============
+Accuracy    :       0.3921
+Brier Score :       0.6079
+
+
+DATASET:  minority
+2022-07-25/20-08-21
+
+AUC score:       0.8457
+
+Confusion Matrix : 
+ [[21 26]
+ [ 6 74]]
+
+=============
+Precision    :       0.7400
+Recall :       0.9250
+F1 Score :       0.8222
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-25/20-15-50
+
+AUC score:       0.3883
+
+Confusion Matrix : 
+ [[147 137]
+ [ 35  10]]
+
+=============
+Precision    :       0.0680
+Recall :       0.2222
+F1 Score :       0.1042
+
+=============
+Accuracy    :       0.4772
+Brier Score :       0.5228
+
+
+DATASET:  minority
+2022-07-25/20-15-50
+
+AUC score:       0.8830
+
+Confusion Matrix : 
+ [[33 14]
+ [16 64]]
+
+=============
+Precision    :       0.8205
+Recall :       0.8000
+F1 Score :       0.8101
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+
+DATASET:  majority
+2022-07-25/20-22-59
+
+AUC score:       0.3840
+
+Confusion Matrix : 
+ [[122 162]
+ [ 27  18]]
+
+=============
+Precision    :       0.1000
+Recall :       0.4000
+F1 Score :       0.1600
+
+=============
+Accuracy    :       0.4255
+Brier Score :       0.5745
+
+
+DATASET:  minority
+2022-07-25/20-22-59
+
+AUC score:       0.8649
+
+Confusion Matrix : 
+ [[26 21]
+ [ 8 72]]
+
+=============
+Precision    :       0.7742
+Recall :       0.9000
+F1 Score :       0.8324
+
+=============
+Accuracy    :       0.7717
+Brier Score :       0.2283
+
+
+DATASET:  majority
+2022-07-25/20-30-26
+
+AUC score:       0.3808
+
+Confusion Matrix : 
+ [[139 145]
+ [ 30  15]]
+
+=============
+Precision    :       0.0938
+Recall :       0.3333
+F1 Score :       0.1463
+
+=============
+Accuracy    :       0.4681
+Brier Score :       0.5319
+
+
+DATASET:  minority
+2022-07-25/20-30-26
+
+AUC score:       0.8564
+
+Confusion Matrix : 
+ [[27 20]
+ [10 70]]
+
+=============
+Precision    :       0.7778
+Recall :       0.8750
+F1 Score :       0.8235
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+
+DATASET:  minority
+2022-07-25/20-57-55
+
+AUC score:       0.8723
+
+Confusion Matrix : 
+ [[32 15]
+ [13 67]]
+
+=============
+Precision    :       0.8171
+Recall :       0.8375
+F1 Score :       0.8272
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-25/20-57-55
+
+AUC score:       0.4090
+
+Confusion Matrix : 
+ [[129 155]
+ [ 28  17]]
+
+=============
+Precision    :       0.0988
+Recall :       0.3778
+F1 Score :       0.1567
+
+=============
+Accuracy    :       0.4438
+Brier Score :       0.5562
+
+
+DATASET:  minority
+2022-07-25/21-06-25
+
+AUC score:       0.8580
+
+Confusion Matrix : 
+ [[34 13]
+ [18 62]]
+
+=============
+Precision    :       0.8267
+Recall :       0.7750
+F1 Score :       0.8000
+
+=============
+Accuracy    :       0.7559
+Brier Score :       0.2441
+
+
+DATASET:  majority
+2022-07-25/21-06-25
+
+AUC score:       0.3739
+
+Confusion Matrix : 
+ [[160 124]
+ [ 37   8]]
+
+=============
+Precision    :       0.0606
+Recall :       0.1778
+F1 Score :       0.0904
+
+=============
+Accuracy    :       0.5106
+Brier Score :       0.4894
+
+
+DATASET:  minority
+2022-07-25/21-14-06
+
+AUC score:       0.8495
+
+Confusion Matrix : 
+ [[26 21]
+ [ 7 73]]
+
+=============
+Precision    :       0.7766
+Recall :       0.9125
+F1 Score :       0.8391
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-25/21-14-06
+
+AUC score:       0.3747
+
+Confusion Matrix : 
+ [[124 160]
+ [ 28  17]]
+
+=============
+Precision    :       0.0960
+Recall :       0.3778
+F1 Score :       0.1532
+
+=============
+Accuracy    :       0.4286
+Brier Score :       0.5714
+
+
+DATASET:  minority
+2022-07-25/21-22-02
+
+AUC score:       0.8630
+
+Confusion Matrix : 
+ [[37 10]
+ [20 60]]
+
+=============
+Precision    :       0.8571
+Recall :       0.7500
+F1 Score :       0.8000
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+
+DATASET:  majority
+2022-07-25/21-22-02
+
+AUC score:       0.3740
+
+Confusion Matrix : 
+ [[178 106]
+ [ 40   5]]
+
+=============
+Precision    :       0.0450
+Recall :       0.1111
+F1 Score :       0.0641
+
+=============
+Accuracy    :       0.5562
+Brier Score :       0.4438
+
+
+DATASET:  minority
+2022-07-25/21-29-35
+
+AUC score:       0.8375
+
+Confusion Matrix : 
+ [[19 28]
+ [ 5 75]]
+
+=============
+Precision    :       0.7282
+Recall :       0.9375
+F1 Score :       0.8197
+
+=============
+Accuracy    :       0.7402
+Brier Score :       0.2598
+
+
+DATASET:  majority
+2022-07-25/21-29-35
+
+AUC score:       0.3793
+
+Confusion Matrix : 
+ [[ 90 194]
+ [ 22  23]]
+
+=============
+Precision    :       0.1060
+Recall :       0.5111
+F1 Score :       0.1756
+
+=============
+Accuracy    :       0.3435
+Brier Score :       0.6565
+
+
+DATASET:  minority
+2022-07-25/21-48-20
+
+AUC score:       0.8699
+
+Confusion Matrix : 
+ [[32 15]
+ [12 68]]
+
+=============
+Precision    :       0.8193
+Recall :       0.8500
+F1 Score :       0.8344
+
+=============
+Accuracy    :       0.7874
+Brier Score :       0.2126
+
+
+DATASET:  majority
+2022-07-25/21-48-20
+
+AUC score:       0.4052
+
+Confusion Matrix : 
+ [[127 157]
+ [ 27  18]]
+
+=============
+Precision    :       0.1029
+Recall :       0.4000
+F1 Score :       0.1636
+
+=============
+Accuracy    :       0.4407
+Brier Score :       0.5593
+
+
+DATASET:  minority
+2022-07-25/21-55-48
+
+AUC score:       0.8646
+
+Confusion Matrix : 
+ [[38  9]
+ [28 52]]
+
+=============
+Precision    :       0.8525
+Recall :       0.6500
+F1 Score :       0.7376
+
+=============
+Accuracy    :       0.7087
+Brier Score :       0.2913
+
+
+DATASET:  majority
+2022-07-25/21-55-48
+
+AUC score:       0.3881
+
+Confusion Matrix : 
+ [[199  85]
+ [ 40   5]]
+
+=============
+Precision    :       0.0556
+Recall :       0.1111
+F1 Score :       0.0741
+
+=============
+Accuracy    :       0.6201
+Brier Score :       0.3799
+
+
+DATASET:  majority
+2022-07-25/22-42-42
+
+AUC score:       0.3813
+
+Confusion Matrix : 
+ [[136 148]
+ [ 32  13]]
+
+=============
+Precision    :       0.0807
+Recall :       0.2889
+F1 Score :       0.1262
+
+=============
+Accuracy    :       0.4529
+Brier Score :       0.5471
+
+
+DATASET:  minority
+2022-07-25/22-42-42
+
+AUC score:       0.8976
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  majority
+2022-07-25/22-50-27
+
+AUC score:       0.3877
+
+Confusion Matrix : 
+ [[136 148]
+ [ 31  14]]
+
+=============
+Precision    :       0.0864
+Recall :       0.3111
+F1 Score :       0.1353
+
+=============
+Accuracy    :       0.4559
+Brier Score :       0.5441
+
+
+DATASET:  minority
+2022-07-25/22-50-27
+
+AUC score:       0.8545
+
+Confusion Matrix : 
+ [[26 21]
+ [10 70]]
+
+=============
+Precision    :       0.7692
+Recall :       0.8750
+F1 Score :       0.8187
+
+=============
+Accuracy    :       0.7559
+Brier Score :       0.2441
+
+
+DATASET:  majority
+2022-07-25/22-57-56
+
+AUC score:       0.3889
+
+Confusion Matrix : 
+ [[159 125]
+ [ 36   9]]
+
+=============
+Precision    :       0.0672
+Recall :       0.2000
+F1 Score :       0.1006
+
+=============
+Accuracy    :       0.5106
+Brier Score :       0.4894
+
+
+DATASET:  minority
+2022-07-25/22-57-56
+
+AUC score:       0.8731
+
+Confusion Matrix : 
+ [[35 12]
+ [20 60]]
+
+=============
+Precision    :       0.8333
+Recall :       0.7500
+F1 Score :       0.7895
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-25/23-05-55
+
+AUC score:       0.3867
+
+Confusion Matrix : 
+ [[122 162]
+ [ 27  18]]
+
+=============
+Precision    :       0.1000
+Recall :       0.4000
+F1 Score :       0.1600
+
+=============
+Accuracy    :       0.4255
+Brier Score :       0.5745
+
+
+DATASET:  minority
+2022-07-25/23-05-55
+
+AUC score:       0.8646
+
+Confusion Matrix : 
+ [[26 21]
+ [ 8 72]]
+
+=============
+Precision    :       0.7742
+Recall :       0.9000
+F1 Score :       0.8324
+
+=============
+Accuracy    :       0.7717
+Brier Score :       0.2283
+
+
+DATASET:  majority
+2022-07-25/23-13-30
+
+AUC score:       0.3844
+
+Confusion Matrix : 
+ [[139 145]
+ [ 30  15]]
+
+=============
+Precision    :       0.0938
+Recall :       0.3333
+F1 Score :       0.1463
+
+=============
+Accuracy    :       0.4681
+Brier Score :       0.5319
+
+
+DATASET:  minority
+2022-07-25/23-13-30
+
+AUC score:       0.8566
+
+Confusion Matrix : 
+ [[27 20]
+ [10 70]]
+
+=============
+Precision    :       0.7778
+Recall :       0.8750
+F1 Score :       0.8235
+
+=============
+Accuracy    :       0.7638
+Brier Score :       0.2362
+
+
+DATASET:  minority
+2022-07-25/23-51-52
+
+AUC score:       0.8830
+
+Confusion Matrix : 
+ [[30 17]
+ [ 9 71]]
+
+=============
+Precision    :       0.8068
+Recall :       0.8875
+F1 Score :       0.8452
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-25/23-51-52
+
+AUC score:       0.3915
+
+Confusion Matrix : 
+ [[122 162]
+ [ 28  17]]
+
+=============
+Precision    :       0.0950
+Recall :       0.3778
+F1 Score :       0.1518
+
+=============
+Accuracy    :       0.4225
+Brier Score :       0.5775
+
+
+DATASET:  minority
+2022-07-25/23-51-52
+
+AUC score:       0.8830
+
+Confusion Matrix : 
+ [[30 17]
+ [ 9 71]]
+
+=============
+Precision    :       0.8068
+Recall :       0.8875
+F1 Score :       0.8452
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-25/23-51-52
+
+AUC score:       0.3915
+
+Confusion Matrix : 
+ [[122 162]
+ [ 28  17]]
+
+=============
+Precision    :       0.0950
+Recall :       0.3778
+F1 Score :       0.1518
+
+=============
+Accuracy    :       0.4225
+Brier Score :       0.5775
+
+
+DATASET:  minority
+2022-07-26/00-08-46
+
+AUC score:       0.8705
+
+Confusion Matrix : 
+ [[32 15]
+ [13 67]]
+
+=============
+Precision    :       0.8171
+Recall :       0.8375
+F1 Score :       0.8272
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-26/00-08-46
+
+AUC score:       0.4049
+
+Confusion Matrix : 
+ [[129 155]
+ [ 27  18]]
+
+=============
+Precision    :       0.1040
+Recall :       0.4000
+F1 Score :       0.1651
+
+=============
+Accuracy    :       0.4468
+Brier Score :       0.5532
+
+
+DATASET:  minority
+2022-07-26/00-14-48
+
+AUC score:       0.8668
+
+Confusion Matrix : 
+ [[37 10]
+ [22 58]]
+
+=============
+Precision    :       0.8529
+Recall :       0.7250
+F1 Score :       0.7838
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-26/00-14-48
+
+AUC score:       0.3973
+
+Confusion Matrix : 
+ [[176 108]
+ [ 39   6]]
+
+=============
+Precision    :       0.0526
+Recall :       0.1333
+F1 Score :       0.0755
+
+=============
+Accuracy    :       0.5532
+Brier Score :       0.4468
+
+
+DATASET:  minority
+2022-07-27/04-39-45
+
+AUC score:       0.8814
+
+Confusion Matrix : 
+ [[31 16]
+ [10 70]]
+
+=============
+Precision    :       0.8140
+Recall :       0.8750
+F1 Score :       0.8434
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-27/04-39-45
+
+AUC score:       0.4143
+
+Confusion Matrix : 
+ [[126 158]
+ [ 25  20]]
+
+=============
+Precision    :       0.1124
+Recall :       0.4444
+F1 Score :       0.1794
+
+=============
+Accuracy    :       0.4438
+Brier Score :       0.5562
+
+
+DATASET:  majority
+2022-07-27/04-03-25
+
+AUC score:       0.3768
+
+Confusion Matrix : 
+ [[141 143]
+ [ 35  10]]
+
+=============
+Precision    :       0.0654
+Recall :       0.2222
+F1 Score :       0.1010
+
+=============
+Accuracy    :       0.4590
+Brier Score :       0.5410
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8883
+
+Confusion Matrix : 
+ [[34 13]
+ [10 70]]
+
+=============
+Precision    :       0.8434
+Recall :       0.8750
+F1 Score :       0.8589
+
+=============
+Accuracy    :       0.8189
+Brier Score :       0.1811`
+
+
+DATASET:  minority
+2022-07-27/17-00-39
+
+AUC score:       0.8758
+
+Confusion Matrix : 
+ [[31 16]
+ [10 70]]
+
+=============
+Precision    :       0.8140
+Recall :       0.8750
+F1 Score :       0.8434
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-27/17-00-39
+
+AUC score:       0.4099
+
+Confusion Matrix : 
+ [[127 157]
+ [ 28  17]]
+
+=============
+Precision    :       0.0977
+Recall :       0.3778
+F1 Score :       0.1553
+
+=============
+Accuracy    :       0.4377
+Brier Score :       0.5623
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8854
+
+Confusion Matrix : 
+ [[34 13]
+ [11 69]]
+
+=============
+Precision    :       0.8415
+Recall :       0.8625
+F1 Score :       0.8519
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  minority
+2022-07-27/04-03-25
+
+AUC score:       0.8851
+
+Confusion Matrix : 
+ [[35 12]
+ [11 69]]
+
+=============
+Precision    :       0.8519
+Recall :       0.8625
+F1 Score :       0.8571
+
+=============
+Accuracy    :       0.8189
+Brier Score :       0.1811
+
+
+DATASET:  majority
+2022-07-27/04-03-25
+
+AUC score:       0.3792
+
+Confusion Matrix : 
+ [[143 141]
+ [ 34  11]]
+
+=============
+Precision    :       0.0724
+Recall :       0.2444
+F1 Score :       0.1117
+
+=============
+Accuracy    :       0.4681
+Brier Score :       0.5319
+
+
+DATASET:  minority
+2022-07-25/22-42-42
+
+AUC score:       0.8944
+
+Confusion Matrix : 
+ [[33 14]
+ [12 68]]
+
+=============
+Precision    :       0.8293
+Recall :       0.8500
+F1 Score :       0.8395
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-07-25/22-42-42
+
+AUC score:       0.3771
+
+Confusion Matrix : 
+ [[135 149]
+ [ 34  11]]
+
+=============
+Precision    :       0.0688
+Recall :       0.2444
+F1 Score :       0.1073
+
+=============
+Accuracy    :       0.4438
+Brier Score :       0.5562
+
+
+DATASET:  minority
+2022-07-25/22-50-27
+
+AUC score:       0.8492
+
+Confusion Matrix : 
+ [[26 21]
+ [10 70]]
+
+=============
+Precision    :       0.7692
+Recall :       0.8750
+F1 Score :       0.8187
+
+=============
+Accuracy    :       0.7559
+Brier Score :       0.2441
+
+
+DATASET:  majority
+2022-07-25/22-50-27
+
+AUC score:       0.3899
+
+Confusion Matrix : 
+ [[138 146]
+ [ 30  15]]
+
+=============
+Precision    :       0.0932
+Recall :       0.3333
+F1 Score :       0.1456
+
+=============
+Accuracy    :       0.4650
+Brier Score :       0.5350
+
+
+DATASET:  minority
+2022-07-25/22-57-56
+
+AUC score:       0.8702
+
+Confusion Matrix : 
+ [[35 12]
+ [21 59]]
+
+=============
+Precision    :       0.8310
+Recall :       0.7375
+F1 Score :       0.7815
+
+=============
+Accuracy    :       0.7402
+Brier Score :       0.2598
+
+
+DATASET:  majority
+2022-07-25/22-57-56
+
+AUC score:       0.3871
+
+Confusion Matrix : 
+ [[159 125]
+ [ 36   9]]
+
+=============
+Precision    :       0.0672
+Recall :       0.2000
+F1 Score :       0.1006
+
+=============
+Accuracy    :       0.5106
+Brier Score :       0.4894
+
+
+DATASET:  minority
+2022-07-25/23-05-55
+
+AUC score:       0.8646
+
+Confusion Matrix : 
+ [[26 21]
+ [ 8 72]]
+
+=============
+Precision    :       0.7742
+Recall :       0.9000
+F1 Score :       0.8324
+
+=============
+Accuracy    :       0.7717
+Brier Score :       0.2283
+
+
+DATASET:  majority
+2022-07-25/23-05-55
+
+AUC score:       0.3879
+
+Confusion Matrix : 
+ [[121 163]
+ [ 28  17]]
+
+=============
+Precision    :       0.0944
+Recall :       0.3778
+F1 Score :       0.1511
+
+=============
+Accuracy    :       0.4195
+Brier Score :       0.5805
+
+
+DATASET:  minority
+2022-07-25/23-13-30
+
+AUC score:       0.8508
+
+Confusion Matrix : 
+ [[25 22]
+ [10 70]]
+
+=============
+Precision    :       0.7609
+Recall :       0.8750
+F1 Score :       0.8140
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-25/23-13-30
+
+AUC score:       0.3821
+
+Confusion Matrix : 
+ [[135 149]
+ [ 30  15]]
+
+=============
+Precision    :       0.0915
+Recall :       0.3333
+F1 Score :       0.1435
+
+=============
+Accuracy    :       0.4559
+Brier Score :       0.5441
+
+
+DATASET:  minority
+2022-07-27/18-24-23
+
+AUC score:       0.8870
+
+Confusion Matrix : 
+ [[15 32]
+ [ 0 80]]
+
+=============
+Precision    :       0.7143
+Recall :       1.0000
+F1 Score :       0.8333
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  majority
+2022-07-27/18-24-23
+
+AUC score:       0.3696
+
+Confusion Matrix : 
+ [[ 86 198]
+ [ 18  27]]
+
+=============
+Precision    :       0.1200
+Recall :       0.6000
+F1 Score :       0.2000
+
+=============
+Accuracy    :       0.3435
+Brier Score :       0.6565
+
+
+DATASET:  minority
+2022-07-27/18-31-51
+
+AUC score:       0.8508
+
+Confusion Matrix : 
+ [[14 33]
+ [ 0 80]]
+
+=============
+Precision    :       0.7080
+Recall :       1.0000
+F1 Score :       0.8290
+
+=============
+Accuracy    :       0.7402
+Brier Score :       0.2598
+
+
+DATASET:  majority
+2022-07-27/18-31-51
+
+AUC score:       0.3760
+
+Confusion Matrix : 
+ [[ 84 200]
+ [ 18  27]]
+
+=============
+Precision    :       0.1189
+Recall :       0.6000
+F1 Score :       0.1985
+
+=============
+Accuracy    :       0.3374
+Brier Score :       0.6626
+
+
+DATASET:  minority
+2022-07-27/18-39-51
+
+AUC score:       0.8282
+
+Confusion Matrix : 
+ [[12 35]
+ [ 0 80]]
+
+=============
+Precision    :       0.6957
+Recall :       1.0000
+F1 Score :       0.8205
+
+=============
+Accuracy    :       0.7244
+Brier Score :       0.2756
+
+
+DATASET:  majority
+2022-07-27/18-39-51
+
+AUC score:       0.3946
+
+Confusion Matrix : 
+ [[ 64 220]
+ [ 12  33]]
+
+=============
+Precision    :       0.1304
+Recall :       0.7333
+F1 Score :       0.2215
+
+=============
+Accuracy    :       0.2948
+Brier Score :       0.7052
+
+
+DATASET:  minority
+2022-07-27/18-47-34
+
+AUC score:       0.8338
+
+Confusion Matrix : 
+ [[37 10]
+ [27 53]]
+
+=============
+Precision    :       0.8413
+Recall :       0.6625
+F1 Score :       0.7413
+
+=============
+Accuracy    :       0.7087
+Brier Score :       0.2913
+
+
+DATASET:  majority
+2022-07-27/18-47-34
+
+AUC score:       0.3966
+
+Confusion Matrix : 
+ [[185  99]
+ [ 39   6]]
+
+=============
+Precision    :       0.0571
+Recall :       0.1333
+F1 Score :       0.0800
+
+=============
+Accuracy    :       0.5805
+Brier Score :       0.4195
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-27/18-55-32
+
+AUC score:       0.3563
+
+Confusion Matrix : 
+ [[126 158]
+ [ 29  16]]
+
+=============
+Precision    :       0.0920
+Recall :       0.3556
+F1 Score :       0.1461
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-27/18-24-23
+
+AUC score:       0.8870
+
+Confusion Matrix : 
+ [[15 32]
+ [ 0 80]]
+
+=============
+Precision    :       0.7143
+Recall :       1.0000
+F1 Score :       0.8333
+
+=============
+Accuracy    :       0.7480
+Brier Score :       0.2520
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-27/18-55-32
+
+AUC score:       0.3563
+
+Confusion Matrix : 
+ [[126 158]
+ [ 29  16]]
+
+=============
+Precision    :       0.0920
+Recall :       0.3556
+F1 Score :       0.1461
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-27/18-55-32
+
+AUC score:       0.3563
+
+Confusion Matrix : 
+ [[126 158]
+ [ 29  16]]
+
+=============
+Precision    :       0.0920
+Recall :       0.3556
+F1 Score :       0.1461
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-27/18-55-32
+
+AUC score:       0.3563
+
+Confusion Matrix : 
+ [[126 158]
+ [ 29  16]]
+
+=============
+Precision    :       0.0920
+Recall :       0.3556
+F1 Score :       0.1461
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  majority
+2022-07-27/18-55-32
+
+AUC score:       0.3563
+
+Confusion Matrix : 
+ [[126 158]
+ [ 29  16]]
+
+=============
+Precision    :       0.0920
+Recall :       0.3556
+F1 Score :       0.1461
+
+=============
+Accuracy    :       0.4316
+Brier Score :       0.5684
+
+
+DATASET:  minority
+2022-07-27/18-55-32
+
+AUC score:       0.8681
+
+Confusion Matrix : 
+ [[24 23]
+ [ 5 75]]
+
+=============
+Precision    :       0.7653
+Recall :       0.9375
+F1 Score :       0.8427
+
+=============
+Accuracy    :       0.7795
+Brier Score :       0.2205
+
+
+DATASET:  minority
+2022-07-27/20-54-59
+
+AUC score:       0.8987
+
+Confusion Matrix : 
+ [[36 11]
+ [13 67]]
+
+=============
+Precision    :       0.8590
+Recall :       0.8375
+F1 Score :       0.8481
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  majority
+2022-07-27/20-54-59
+
+AUC score:       0.3821
+
+Confusion Matrix : 
+ [[154 130]
+ [ 32  13]]
+
+=============
+Precision    :       0.0909
+Recall :       0.2889
+F1 Score :       0.1383
+
+=============
+Accuracy    :       0.5076
+Brier Score :       0.4924
+
+
+DATASET:  minority
+2022-04-26/10-27-14
+
+AUC score:       0.8793
+
+Confusion Matrix : 
+ [[41  6]
+ [16 64]]
+
+=============
+Precision    :       0.9143
+Recall :       0.8000
+F1 Score :       0.8533
+
+=============
+Accuracy    :       0.8268
+Brier Score :       0.1732
+
+
+DATASET:  minority
+2022-04-26/13-41-16
+
+AUC score:       0.8803
+
+Confusion Matrix : 
+ [[40  7]
+ [19 61]]
+
+=============
+Precision    :       0.8971
+Recall :       0.7625
+F1 Score :       0.8243
+
+=============
+Accuracy    :       0.7953
+Brier Score :       0.2047
+
+
+DATASET:  majority
+2022-04-26/13-41-16
+
+AUC score:       0.7727
+
+Confusion Matrix : 
+ [[2686  381]
+ [ 256  285]]
+
+=============
+Precision    :       0.4279
+Recall :       0.5268
+F1 Score :       0.4722
+
+=============
+Accuracy    :       0.8234
+Brier Score :       0.1766
+
+
+DATASET:  minority
+2022-04-26/10-27-14
+
+AUC score:       0.8793
+
+Confusion Matrix : 
+ [[41  6]
+ [16 64]]
+
+=============
+Precision    :       0.9143
+Recall :       0.8000
+F1 Score :       0.8533
+
+=============
+Accuracy    :       0.8268
+Brier Score :       0.1732
+
+
+DATASET:  minority
+2022-04-26/19-40-44
+
+AUC score:       0.8886
+
+Confusion Matrix : 
+ [[38  9]
+ [15 65]]
+
+=============
+Precision    :       0.8784
+Recall :       0.8125
+F1 Score :       0.8442
+
+=============
+Accuracy    :       0.8110
+Brier Score :       0.1890
+
+
+DATASET:  majority
+2022-04-26/19-40-44
+
+AUC score:       0.7725
+
+Confusion Matrix : 
+ [[2526  541]
+ [ 214  327]]
+
+=============
+Precisi

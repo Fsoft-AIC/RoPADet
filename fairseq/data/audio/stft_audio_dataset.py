@@ -227,14 +227,23 @@ class STFTAudioDataset(FairseqDataset):
         on this order."""
 
         if self.shuffle:
-            order = [np.random.permutation(len(self))]
+            order = [np.random.permutation(len(self))] #list of 1 np.array: [np.array()]
+            # return order[0]
+            # NOTE: all the above is false, I am not yet understand this function :(
+            # NOTE: this is not random at all
+            # the list is ordered by the length of the input spectrum
+            # only random in case of equal lengths
+            # My current fix is to truly randomized the order
+            # but in case of unbalanced dataset
+            # TODO: need to add weighted sampler
             order.append(
                 np.minimum(
                     np.array(self.sizes[:, 1]).squeeze(),
                     self.max_sample_size,
                 )
             )
-            # print(self.sizes.shape)
+            # print("ORDER: ", order)
+            # print("SORT: ", np.lexsort(order))
             # print(order[0].shape, order[1].shape)
             return np.lexsort(order)[::-1]
         else:

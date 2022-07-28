@@ -113,7 +113,7 @@ print(model)
 # X_sounddr_min = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
 # sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X_sounddr_min, 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
 
-icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['train', 'valid'])
+icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['train', 'valid'])
 
 # test_set_inp = [*coughvid_test_set_inp, *aicvvn_test_set_inp, *coswara_test_set_inp]
 # test_set_out = np.concatenate((coughvid_test_set_out, aicvvn_test_set_out, coswara_test_set_out))
