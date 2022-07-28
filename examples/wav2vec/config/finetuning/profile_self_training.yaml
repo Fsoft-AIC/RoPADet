@@ -4,7 +4,7 @@ common:
   fp16: true
   log_format: json
   log_interval: 200
-  wandb_project: wav2vec2_icbhi_pretrain
+  wandb_project: wav2vec2_covid_profile_self_training
 
 checkpoint:
   save_interval_updates: 25000
@@ -12,39 +12,39 @@ checkpoint:
   no_epoch_checkpoints: true
 
 task:
-  _name: stft_audio_pretraining
+  _name: audio_profiling
   data: ???
-  max_sample_size: 5000
-  min_sample_size: 100
   num_mels: 128
   normalize: false
   enable_padding: true
+  profiling: true
+  profiles_path: ???
 
 dataset:
-  num_workers: 6
-  batch_size: 64
+  num_workers: 0
+  batch_size: 32
   skip_invalid_size_inputs_valid_test: true
+  valid_subset: valid
 
 distributed_training:
-  distributed_world_size: 2
+  distributed_world_size: 1
   ddp_backend: legacy_ddp
 
 criterion:
-  _name: wav2vec
-  infonce: true
-  log_keys: ["prob_perplexity","code_perplexity","temp"]
-  loss_weights: [0.1, 1]
+  _name: mse_loss
+  l2_loss: true
 
 optimization:
   max_update: 400000
-  lr: [0.0002]
+  lr: [5e-5]
   update_freq: [1]
+  max_epoch: 1000
 
 optimizer:
   _name: adam
   adam_betas: (0.9,0.98)
-  adam_eps: 1e-06
-  weight_decay: 0.01
+  adam_eps: 1e-08
+  weight_decay: 4e-3
 
 lr_scheduler:
   _name: polynomial_decay
@@ -63,6 +63,6 @@ model:
   encoder_layers: 2
   encoder_attention_heads: 2
   conv_feature_layers: "[(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
-  # conv_feature_layers: "[(512, 5, 1, 1)] + [(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
+
   # conv_feature_layers: "[(128, 3, 1, 1)] + [(128, 3, 1, 2)] + [(128, 3, 1, 1)] + [(192, 3, 2, 1)] + [(192, 3, 2, 2)] + [(192, 3, 2, 1)] + [(256, 3, 2, 1)] + [(256, 3, 4, 2)] + [(256, 3, 2, 1)]"
   # conv_feature_layers: "[(192, 3, 1, 1)] + [(192, 3, 1, 2)] + [(192, 3, 1, 1)] + [(256, 3, 2, 1)] + [(256, 3, 2, 2)] + [(256, 3, 2, 1)] + [(384, 3, 2, 1)] + [(384, 3, 4, 2)] + [(384, 3, 2, 1)]"

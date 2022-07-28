@@ -160,15 +160,11 @@ def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test'], 
                         file_path, _, _ = line.split('\t')
                         profile_id = file_path[file_path.rfind('/') + 1: -17]
                     profile_ids.append(profile_id)
-                else:
                     file_path, _, _ = line.split('\t')
                 spec = np.load(os.path.join(orig_dir, file_path))
                 feats.append(spec)
                 labels.append(int(label))
 
-    if profiling:
-        return feats, labels, profile_ids
-    else:
         return feats, labels
 
 

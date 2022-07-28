@@ -176,11 +176,6 @@ for inputs, labels, lengths in dataloader:
 
     target_array.extend(list(labels.detach().cpu().numpy()))
 
-
-# res['assessment_result'] = pred_array
-
-# res.to_csv('results.csv', index=False)
-
 print(evaluate(pred_array, target_array, args))
 
 '''

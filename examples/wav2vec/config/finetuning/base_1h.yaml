@@ -26,7 +26,7 @@ task:
 
 dataset:
   num_workers: 6
-  batch_size: 32
+  batch_size: 64
   skip_invalid_size_inputs_valid_test: true
   # validate_after_updates: 50
   # validate_interval: 1000
@@ -39,7 +39,8 @@ distributed_training:
 criterion:
   _name: cross_entropy
   # zero_infinity: true
-  class_weights: [1.0, 1.0]
+  # class_weights: [2.7, 1.0]
+  class_weights: [6.6, 0.6, 1.5]
 
 optimization:
   max_update: 13000
@@ -55,14 +56,15 @@ optimizer:
   weight_decay: 4e-3
 
 lr_scheduler:
-  _name: tri_stage
-  phase_ratio: [0.1, 0.4, 0.5]
-  final_lr_scale: 0.05
+  # _name: tri_stage
+  # phase_ratio: [0.1, 0.4, 0.5]
+  # final_lr_scale: 0.05
+  _name: fixed
 
 model:
   _name: wav2vec_seq2seq
   w2v_path: ???
-  no_pretrained_weights: true
+  no_pretrained_weights: false
   apply_mask: true
   mask_prob: 0.3
   mask_channel_prob: 0.25
@@ -72,3 +74,4 @@ model:
   feature_grad_mult: 1
   freeze_finetune_updates: 0
   final_dropout: 0.1
+  clf_output_dim: 3

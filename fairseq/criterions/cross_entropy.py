@@ -17,7 +17,7 @@ from omegaconf import II
 
 from fairseq.EncoderContrastive import SupConLoss
 from typing import List
-
+import numpy as np
 
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
@@ -80,16 +80,35 @@ class CrossEntropyCriterion(FairseqCriterion):
         else:
             predicts = raw_predicts[:, 1].squeeze().tolist()
 
+        # NOTE: compute auc the normal way
+        # logging_output = {
+        #     "loss": loss.data,
+        #     "ntokens": sample["ntokens"],
+        #     "nsentences": sample["target"].size(0),
+        #     "sample_size": sample_size,
+        #     "ncorrect": (outputs[0] == outputs[1]).sum(),
+        #     # "predicts": predicts,
+        #     "predicts": outputs[2].detach().cpu().numpy().tolist(), # use this in case of multi-class
+        #     "targets": outputs[1].detach().cpu().numpy().tolist(),
+        # }
+
+        # #NOTE: compute auc in case of multi-class, follow anh Truong method
+        predicts = outputs[2].detach().cpu().numpy().ravel()
+        raw_targets = outputs[1].detach().cpu().numpy()
+        targets =  np.zeros((raw_targets.size, len(self.class_weights)))
+        targets[np.arange(raw_targets.size),raw_targets] = 1
+        targets = targets.ravel()
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
             "nsentences": sample["target"].size(0),
             "sample_size": sample_size,
             "ncorrect": (outputs[0] == outputs[1]).sum(),
+            # "predicts": predicts,
             "predicts": predicts,
-            # "predicts": outputs[2].detach().cpu().numpy().tolist(),
-            "targets": outputs[1].detach().cpu().numpy().tolist(),
+            "targets": targets
         }
+        
         if model.sup_contrast:
             logging_output["ce_loss"] = loss_components[0].data
             logging_output["scl_loss"] = loss_components[1].data
@@ -127,7 +146,7 @@ class CrossEntropyCriterion(FairseqCriterion):
         pt = Variable(lprobs.data.exp())
         at = weights.gather(0,target.data.view(-1))
         lprobs = lprobs * Variable(at)
-        loss = -1 * (1-pt)**0.0 * lprobs
+        loss = -1 * (1-pt)**2.0 * lprobs
 
         # loss = F.nll_loss(
         #     lprobs,

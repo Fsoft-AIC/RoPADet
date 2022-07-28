@@ -110,26 +110,9 @@ model.encoder.eval()
 model.decoder.eval()
 
 print("MODEL PARAMETERS: ")
-# for parameter in model.parameters():
-#     print(parameter)
 num_params = sum(param.numel() for param in model.parameters())
 print(num_params)
 
-# def cross_entropy(X,y):
-#     """
-#     X is the output from fully connected layer (num_examples x num_classes)
-#     y is labels (num_examples x 1)
-#     	Note that y is not one-hot encoded vector. 
-#     	It can be computed as y.argmax(axis=1) from one-hot encoded vectors of labels if required.
-#     """
-#     m = y.shape[0]
-#     # We use multidimensional array indexing to extract 
-#     # softmax probability of the correct label for each sample.
-#     # Refer to https://docs.scipy.org/doc/numpy/user/basics.indexing.html#indexing-multi-dimensional-arrays for understanding multidimensional array indexing.
-#     log_likelihood = -np.log(X[range(m),y])
-#     loss = np.sum(log_likelihood) / m
-#     return loss
-# ces = []
 
 for inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
@@ -140,10 +123,6 @@ for inputs, labels, lengths in dataloader:
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
     outputs = model.decoder(encoder_out['encoder_out'])
     outputs = F.softmax(outputs, dim=1)
-
-    # ce_predict = outputs.detach().cpu().numpy()
-    # ce_target = labels.detach().cpu().numpy()
-    # ces.append(cross_entropy(ce_predict, ce_target))
 
     # NOTE: For ICBHI dataset:
     # pred_array.append(int(outputs.argmax(dim=1).detach().cpu().numpy().squeeze()))
@@ -186,12 +165,3 @@ conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:,np.newaxis
 print("Classwise Scores", conf_matrix.diagonal())
 print(f"{get_score(class_hits, class_counts):.4f}")
 '''
-
-# import matplotlib.pyplot as plt
-# ces = np.array(ces)
-# q25, q75 = np.percentile(ces, [25, 75])
-# bin_width = 2 * (q75 - q25) * len(ces) ** (-1/3)
-# bins = round((ces.max() - ces.min()) / bin_width)
-# print("Freedman–Diaconis number of bins:", bins)
-# fig = plt.hist(ces, bins=bins)
-# plt.savefig('cross_entropy_loss_train.png')

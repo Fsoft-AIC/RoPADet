@@ -60,8 +60,8 @@ model:
   feature_grad_mult: 0.1
   encoder_embed_dim: 256
   encoder_ffn_embed_dim: 512
-  encoder_layers: 4
-  encoder_attention_heads: 4
+  encoder_layers: 2
+  encoder_attention_heads: 2
   conv_feature_layers: "[(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
   num_negatives: 20
   negatives_from_everywhere: true

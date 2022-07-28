@@ -494,9 +494,9 @@ def validate(
         # log validation stats
         from sklearn.metrics import roc_auc_score
         if cfg.checkpoint.best_checkpoint_metric == 'auc':
-
             dct = agg.get_smoothed_values()
-            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
+            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, average='micro')
+            # dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
             stats = get_valid_stats(cfg, trainer, dct)
         elif cfg.checkpoint.best_checkpoint_metric == 'icbhi':
             def get_score(hits, counts):
