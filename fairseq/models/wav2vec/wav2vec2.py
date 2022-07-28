@@ -43,6 +43,9 @@ LAYER_TYPE_CHOICES = ChoiceEnum(["transformer", "conformer"])
 
 @dataclass
 class Wav2Vec2Config(FairseqDataclass):
+    num_mel: int = field(
+        default=192, metadata={"help": "number of input frequency dimensions"}
+    )
     extractor_mode: EXTRACTOR_MODE_CHOICES = field(
         default="default",
         metadata={
@@ -306,6 +309,7 @@ class Wav2Vec2Model(BaseFairseqModel):
             dropout=0.0,
             mode=cfg.extractor_mode,
             conv_bias=cfg.conv_bias,
+            in_dim=cfg.num_mel
         )
 
         self.post_extract_proj = (
@@ -849,6 +853,7 @@ class ConvFeatureExtractionModel(nn.Module):
         dropout: float = 0.0,
         mode: str = "default",
         conv_bias: bool = False,
+        in_dim: int = 128,
     ):
         super().__init__()
 
@@ -900,7 +905,7 @@ class ConvFeatureExtractionModel(nn.Module):
             else:
                 return nn.Sequential(make_conv(), nn.Dropout(p=dropout), nn.GELU())
 
-        in_d = 128
+        in_d = in_dim
         self.conv_layers = nn.ModuleList()
         self.__padding = []
         for i, cl in enumerate(conv_layers):

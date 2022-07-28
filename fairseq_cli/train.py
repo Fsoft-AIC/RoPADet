@@ -495,8 +495,12 @@ def validate(
         from sklearn.metrics import roc_auc_score
         if cfg.checkpoint.best_checkpoint_metric == 'auc':
             dct = agg.get_smoothed_values()
-            dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, average='micro')
-            # dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
+            if len(cfg.criterion.class_weights) != 2:
+                dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, multi_class='ovr')
+            elif cfg.criterion.ovr_onehot:
+                dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts, average='micro')
+            else:
+                dct[cfg.checkpoint.best_checkpoint_metric] = roc_auc_score(final_targets, final_predicts)
             stats = get_valid_stats(cfg, trainer, dct)
         elif cfg.checkpoint.best_checkpoint_metric == 'icbhi':
             def get_score(hits, counts):
