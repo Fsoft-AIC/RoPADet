@@ -34,15 +34,22 @@ class CrossEntropyCriterionConfig(FairseqDataclass):
             "help": "class weights for loss function"
         },
     )
+    ovr_onehot: bool = field(
+        default = False,
+        metadata = {
+            'help': 'if true, compute AUC like Fakhry et al. 2021, anh Truong\'s method'
+        }
+    )
 
 
 @register_criterion("cross_entropy", dataclass=CrossEntropyCriterionConfig)
 class CrossEntropyCriterion(FairseqCriterion):
-    def __init__(self, task, sentence_avg, class_weights):
+    def __init__(self, task, sentence_avg, class_weights, ovr_onehot):
         super().__init__(task)
         self.sentence_avg = sentence_avg
         # self.positive_class_weight = positive_class_weight
         self.class_weights = class_weights
+        self.ovr_onehot = ovr_onehot
 
 
     def forward(self, model, sample, reduce=True):
@@ -74,30 +81,23 @@ class CrossEntropyCriterion(FairseqCriterion):
         # print("DIFFERENCES: ", F.softmax(net_output, dim=1).argmax(dim=1).detach().cpu().numpy()==outputs[0].detach().cpu().numpy())
         # print("TARGETS: ", outputs[1].detach().cpu().numpy().tolist())
 
-        raw_predicts = F.softmax(net_output, dim=1).detach().cpu().numpy()
-        if raw_predicts.shape[0] == 1:
-            predicts = [raw_predicts.squeeze()[1]]
+
+        if len(self.class_weights) == 2:
+            raw_predicts = F.softmax(net_output, dim=1).detach().cpu().numpy()
+            if raw_predicts.shape[0] == 1:
+                predicts = [raw_predicts.squeeze()[1]]
+            else:
+                predicts = raw_predicts[:, 1].squeeze().tolist()
+            targets = outputs[1].detach().cpu().numpy().tolist()
+        elif self.ovr_onehot:
+            predicts = outputs[2].detach().cpu().numpy().ravel()
+            raw_targets = outputs[1].detach().cpu().numpy()
+            targets =  np.zeros((raw_targets.size, len(self.class_weights)))
+            targets[np.arange(raw_targets.size),raw_targets] = 1
+            targets = targets.ravel()
         else:
-            predicts = raw_predicts[:, 1].squeeze().tolist()
-
-        # NOTE: compute auc the normal way
-        # logging_output = {
-        #     "loss": loss.data,
-        #     "ntokens": sample["ntokens"],
-        #     "nsentences": sample["target"].size(0),
-        #     "sample_size": sample_size,
-        #     "ncorrect": (outputs[0] == outputs[1]).sum(),
-        #     # "predicts": predicts,
-        #     "predicts": outputs[2].detach().cpu().numpy().tolist(), # use this in case of multi-class
-        #     "targets": outputs[1].detach().cpu().numpy().tolist(),
-        # }
-
-        # #NOTE: compute auc in case of multi-class, follow anh Truong method
-        predicts = outputs[2].detach().cpu().numpy().ravel()
-        raw_targets = outputs[1].detach().cpu().numpy()
-        targets =  np.zeros((raw_targets.size, len(self.class_weights)))
-        targets[np.arange(raw_targets.size),raw_targets] = 1
-        targets = targets.ravel()
+            predicts = outputs[2].detach().cpu().numpy().tolist()
+            targets = outputs[1].detach().cpu().numpy().tolist()
         logging_output = {
             "loss": loss.data,
             "ntokens": sample["ntokens"],
@@ -106,13 +106,13 @@ class CrossEntropyCriterion(FairseqCriterion):
             "ncorrect": (outputs[0] == outputs[1]).sum(),
             # "predicts": predicts,
             "predicts": predicts,
-            "targets": targets
+            "targets": targets,
         }
-        
+
         if model.sup_contrast:
             logging_output["ce_loss"] = loss_components[0].data
             logging_output["scl_loss"] = loss_components[1].data
-        # print("PREDICTION ARRAY BEFORE: ", F.softmax(net_output, dim=1))
+
         return loss, sample_size, logging_output
 
     def compute_loss(self, model, net_output, sample, reduce=True):
