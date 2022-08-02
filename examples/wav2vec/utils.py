@@ -52,6 +52,52 @@ def update_run(run, k, v):
     run.summary[k] = v
 
 
+def icbhi_evaluate(final_predicts, final_targets, args):
+    def get_score(hits, counts):
+        se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
+        sp = hits[0] / counts[0]
+        print(f"SENSE: {se:.4f}", file=f)
+        print(f"SPEC: {sp:.4f}", file=f)
+        sc = (se+sp) / 2.0
+        return sc
+
+    f = open('output.txt', 'a')
+
+    print('DATASET: ', args.input_file, file=f)
+
+    start_id = args.path.find('-')-4
+    end_id = args.path.rfind('-')+3
+    print(args.path[start_id:end_id], file=f)
+
+    class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
+    class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
+    for idx in range(len(final_targets)):
+        class_counts[final_targets[idx]] += 1.0
+        if final_predicts[idx] == final_targets[idx]:
+            class_hits[final_targets[idx]] += 1.0
+
+    print(class_counts)
+    print("Accuracy: ", accuracy_score(final_targets, final_predicts), file=f)
+    conf_matrix = confusion_matrix(final_targets, final_predicts)
+    print(conf_matrix, file=f)
+    conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:,np.newaxis]
+    print(f"Classwise Scores: {conf_matrix.diagonal()}", file=f)
+    print(f"ICBHI score: {get_score(class_hits, class_counts):.4f}", file=f)
+
+
+def ovr_evaluate(final_predicts, final_targets, args):
+    f = open('output.txt', 'a')
+
+    print('DATASET: ', args.input_file, file=f)
+
+    start_id = args.path.find('-')-4
+    end_id = args.path.rfind('-')+3
+    print(args.path[start_id:end_id], file=f)
+
+    auc = roc_auc_score(final_targets, final_predicts, average='micro')
+    print(f'\nAUC score: {auc:12.4f}', file=f)
+
+
 def evaluate(ensem_preds, targets, args):
     """
       Evaluate the prediction by providing metrics & also the best threshold (to get the highest f1-score)

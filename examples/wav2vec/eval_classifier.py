@@ -22,30 +22,34 @@ task = tasks.setup_task(args)
 # Load model
 print(f' | loading model from ${args.path}')
 # models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-# models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128_aicovidvn_fold4', 'w2v_path': '/media/Z/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'data/ICBHI_256_32_respirenetsplit_unnormalized_unresized_augmented_fold4', 'w2v_path': '/media/Z/tungtk2/fairseq/outputs/2022-06-22/14-26-59/checkpoints/checkpoint_best.pt'})
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'data/orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
+# models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'data/ICBHI_256_32_respirenetsplit_unnormalized_unresized_augmented_fold4', 'w2v_path': '/media/Z/tungtk2/fairseq/outputs/2022-06-22/14-26-59/checkpoints/checkpoint_best.pt'})
 model = models[0].cuda()
 
 print(model)
 
-if args.input_file == 'majority':
-    maj_inp, maj_out = load_fairseq_dataset('data/AandS_2048_128_fold4', '/media/Z/tungtk2/aicv115m_api_template/', ['test'])
+if args.input_file == 'majority_small':
+    maj_inp, maj_out, _ = load_fairseq_dataset('data/majority_small', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
+    test_set_inp = [*maj_inp]
+    test_set_out = np.array(maj_out)
+elif args.input_file == 'majority':
+    maj_inp, maj_out, _ = load_fairseq_dataset('data/majority_clean', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
 elif args.input_file == 'minority':
-    min_inp, min_out, _ = load_fairseq_dataset('data/profile_2048_128', '/media/Z/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
+    min_inp, min_out, _ = load_fairseq_dataset('data/profile_2048_128', '/media/data/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
     test_set_inp = [*min_inp]
     test_set_out = np.array(min_out)
 elif args.input_file.startswith('w2g_a2'):
-    w2g_a2_inp, w2g_a2_out = load_fairseq_dataset(f'data/{args.input_file}', '/media/Z/tungtk2/aicv115m_api_template/', ['test'])
+    w2g_a2_inp, w2g_a2_out = load_fairseq_dataset(f'data/{args.input_file}', '/media/data/tungtk2/aicv115m_api_template/', ['test'])
     test_set_inp = [*w2g_a2_inp]
     test_set_out = np.array(w2g_a2_out)
 elif args.input_file.startswith('w2g_a4'):
-    w2g_a4_inp, w2g_a4_out = load_fairseq_dataset(f'data/{args.input_file}', '/media/Z/tungtk2/aicv115m_api_template/', ['test'])
+    w2g_a4_inp, w2g_a4_out = load_fairseq_dataset(f'data/{args.input_file}', '/media/data/tungtk2/aicv115m_api_template/', ['test'])
     test_set_inp = [*w2g_a4_inp]
     test_set_out = np.array(w2g_a4_out)
 elif args.input_file.startswith('ICBHI'):
-    icbhi_inp, icbhi_out, _ = load_fairseq_dataset(f'data/{args.input_file}', '/media/Z/tungtk2/RespireNet', splits=['valid'], profiling=True)
+    icbhi_inp, icbhi_out, _ = load_fairseq_dataset(f'data/{args.input_file}', '/media/data/tungtk2/RespireNet', splits=['valid'], profiling=True)
     test_set_inp = [*icbhi_inp]
     test_set_out = np.array(icbhi_out)
 
