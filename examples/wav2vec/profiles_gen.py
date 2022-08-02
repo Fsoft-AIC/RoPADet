@@ -4,12 +4,17 @@ from fairseq import checkpoint_utils, options, tasks
 import numpy as np
 from collections import defaultdict
 from tqdm import tqdm
-from utils import load_fairseq_dataset, ProfileDataset, profile_collate_fn
+from utils import load_fairseq_dataset, ProfileDataset, profile_collate_fn, get_run
 
 
 # Parse command-line arguments for generation
 parser = options.get_generation_parser(default_task='stft_audio_pretraining')
+parser.add_argument('-r', '--run_id', type=str, required=False)
 args = options.parse_args_and_arch(parser)
+
+if args.path is None:
+    args.run = get_run(args)
+    args.path = f'/media/Z/tungtk2/fairseq/outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
 
 
 # Setup task
@@ -51,7 +56,7 @@ min_inp, min_out, min_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data
 # test_set_id = np.array(min_id)
 
 
-maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/majority_small', '/media/Z/tungtk2/aicv115m_api_template/data', ['train', 'valid', 'test'], profiling=True)
+maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/majority_clean', '/media/Z/tungtk2/aicv115m_api_template/data', ['train', 'valid', 'test'], profiling=True)
 test_set_inp = [*maj_inp, *min_inp]
 test_set_out = np.concatenate((maj_out, min_out))
 test_set_id = np.concatenate((maj_id, min_id))
@@ -85,15 +90,25 @@ for ids, inputs, labels, lengths in tqdm(dataloader):
     # NOTE: only works for batch size = 1
     profiles[ids[0]].append(outputs)
 
+# Replace profile in labeled set (minority) with profile of pre-trained model, as the true label
+previous_profile = torch.load('/media/Z/tungtk2/fairseq/outputs/2022-07-25/00-11-55/checkpoints/profile_all.pt')
+
 count = 0
 for key, val in profiles.items():
     print(key, len(val))
     count += len(val)
-    profiles[key] = torch.mean(torch.stack(val), dim=0)
-    print(profiles[key].shape)
+    if len(val) > 1:
+        profiles[key] = previous_profile[key]
+    else:
+        profiles[key] = torch.mean(torch.stack(val), dim=0)
+    if profiles[key].shape != torch.Size([256]):
+        print(profiles[key].shape)
 print(count)
 
-SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile.pt'
+
+
+# SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile_all.pt'
+SAVE_PATH = f'/media/Z/tungtk2/fairseq/outputs/profile_all_{args.run.name}.pt'
 print("Saving profiles to: ", SAVE_PATH)
 
 torch.save(profiles, SAVE_PATH)

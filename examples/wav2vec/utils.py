@@ -3,6 +3,9 @@ import os
 import numpy as np
 import torch
 from torch.utils.data import Dataset
+import wandb
+from tqdm import tqdm
+
 
 def compute_metrics(cfs_matrix):
     """
@@ -22,6 +25,68 @@ def compute_metrics(cfs_matrix):
     recall = cfs_matrix[1,1] / (cfs_matrix[1,1] + cfs_matrix[1,0])
     f1 = 2 * (precision * recall) / (precision + recall)
     return precision, recall, f1
+
+
+def get_run(args):
+    api = wandb.Api()
+
+    if hasattr(args,'run_id') and args.run_id is not None:
+        # run = api.run(f'snp-robustness/wav2vec2_covid/{args.run_id}')
+        run = api.run(f'snp-robustness/wav2vec2_covid_profile_self_training/{args.run_id}')
+    # elif hasattr(args, 'path') and args.path is not None:
+    #     # First folder in wandb folder includes run id
+    #     run_path = args.path[:-31]
+    else:
+        runs = api.runs('snp-robustness/wav2vec2_covid_profile_self_training')
+        run = runs[0]
+
+    return run
+
+
+def icbhi_evaluate(final_predicts, final_targets, args):
+    def get_score(hits, counts):
+        se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
+        sp = hits[0] / counts[0]
+        print(f"SENSE: {se:.4f}", file=f)
+        print(f"SPEC: {sp:.4f}", file=f)
+        sc = (se+sp) / 2.0
+        return sc
+
+    f = open('output.txt', 'a')
+
+    print('DATASET: ', args.input_file, file=f)
+
+    start_id = args.path.find('-')-4
+    end_id = args.path.rfind('-')+3
+    print(args.path[start_id:end_id], file=f)
+
+    class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
+    class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
+    for idx in range(len(final_targets)):
+        class_counts[final_targets[idx]] += 1.0
+        if final_predicts[idx] == final_targets[idx]:
+            class_hits[final_targets[idx]] += 1.0
+
+    print(class_counts)
+    print("Accuracy: ", accuracy_score(final_targets, final_predicts), file=f)
+    conf_matrix = confusion_matrix(final_targets, final_predicts)
+    print(conf_matrix, file=f)
+    conf_matrix = conf_matrix.astype('float') / conf_matrix.sum(axis=1)[:,np.newaxis]
+    print(f"Classwise Scores: {conf_matrix.diagonal()}", file=f)
+    print(f"ICBHI score: {get_score(class_hits, class_counts):.4f}", file=f)
+
+
+def ovr_evaluate(final_predicts, final_targets, args):
+    f = open('output.txt', 'a')
+
+    print('DATASET: ', args.input_file, file=f)
+
+    start_id = args.path.find('-')-4
+    end_id = args.path.rfind('-')+3
+    print(args.path[start_id:end_id], file=f)
+
+    auc = roc_auc_score(final_targets, final_predicts, average='micro')
+    print(f'\nAUC score: {auc:12.4f}', file=f)
 
 
 def evaluate(ensem_preds, targets, args):
@@ -122,7 +187,7 @@ def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test'], 
     profile_ids = []
     for split in splits:
         with open(os.path.join(dir_path, f'{split}.tsv')) as f, open(os.path.join(dir_path, f'{split}.label')) as label:
-            for line, label in zip(f.read().split('\n')[1:-1], label.read().split('\n')):
+            for line, label in tqdm(zip(f.read().split('\n')[1:-1], label.read().split('\n'))):
                 if profiling:
                     file_path, _, _, profile_id = line.split('\t')
                     profile_ids.append(profile_id)
@@ -131,6 +196,34 @@ def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test'], 
                 spec = np.load(os.path.join(orig_dir, file_path))
                 feats.append(spec)
                 labels.append(int(label))
+
+    if profiling:
+        return feats, labels, profile_ids
+    else:
+        return feats, labels
+
+def load_fairseq_dataset_clean(dir_path, orig_dir, splits=['train', 'valid', 'test'], profiling=False):
+    '''
+    dir_path: directory to fairseq meta data files
+    orig_dir: original directory that stored the spectrum
+    '''
+    cleaning_profiles = ['bad_cough_2021-08-18T08:43:58.113Z', 'good_cough_2021-08-02T02:20:03.507Z', 'good_cough_2021-09-06T12:52:43.247Z', 'good_cough_2021-09-06T05:42:10.955Z', 'good_cough_2021-09-23T09:07:09.841Z', 'good_cough_2021-09-12T02:55:10.157Z', 'good_cough_2021-08-20T16:27:48.296Z', 'isofh_undefined-1637216183.504766', 'isofh_undefined-1642222653.2569923', 'isofh_undefined-1645671757.060289', 'isofh_undefined-1645681104.1764894', 'isofh_undefined-1645758127.0673249', 'isofh_undefined-1647192523.4555895', 'isofh_undefined-1636079123.4377832', 'isofh_undefined-1644327539.345447', 'isofh_undefined-1633924005.3468943', 'isofh_undefined-1636877044.0882564', 'isofh_undefined-1636960952.7196362', 'isofh_undefined-1644507712.6994777', 'isofh_undefined-1644558767.9239337', 'isofh_undefined-1645000102.4192054', 'isofh_undefined-1645152964.4192548', 'isofh_undefined-1634131789.5582144', 'isofh_undefined-1634282003.54855', 'isofh_undefined-1647307289.5514479', 'isofh_undefined-1639401508.6477778', 'isofh_undefined-1634905349.1400065', 'isofh_undefined-1646214697.4001377', 'isofh_undefined-1646272200.5174289', 'isofh_undefined-1635680127.5080094', 'isofh_undefined-1635719184.5851254']
+    feats = []
+    labels = []
+    profile_ids = []
+    for split in splits:
+        with open(os.path.join(dir_path, f'{split}.tsv')) as f, open(os.path.join(dir_path, f'{split}.label')) as label:
+            for line, label in zip(f.read().split('\n')[1:-1], label.read().split('\n')):
+                if profiling:
+                    file_path, _, _, profile_id = line.split('\t')
+                    if profile_id in cleaning_profiles:
+                        profile_ids.append(profile_id)
+                else:
+                    file_path, _, _ = line.split('\t')
+                if profile_id in cleaning_profiles:
+                    spec = np.load(os.path.join(orig_dir, file_path))
+                    feats.append(spec)
+                    labels.append(int(label))
 
     if profiling:
         return feats, labels, profile_ids
