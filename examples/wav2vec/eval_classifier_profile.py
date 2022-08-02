@@ -13,17 +13,18 @@ from utils import load_fairseq_dataset, evaluate, ProfileDataset, profile_collat
 parser = options.get_generation_parser(default_task='audio_finetuning')
 parser.add_argument('-i', '--input_file', type=str, required=True)
 parser.add_argument('-r', '--run_id', type=str, required=False)
+parser.add_argument('-rn', '--run_name', type=str, required=False)
+parser.add_argument('-p', '--profile_path', type=str, required=True)
 args = options.parse_args_and_arch(parser)
 
-if args.path is None:
-    args.run = get_run(args)
-    args.path = f'/media/data/tungtk2/fairseq/outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
+args.run = get_run(args)
+args.path = f'/media/data/tungtk2/fairseq/outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
 
 # Setup task
 task = tasks.setup_task(args)
 
 task.cfg.profiling = True
-task.cfg.profiles_path = '/media/data/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/profile.pt'
+task.cfg.profiles_path = args.profile_path
 # Load model
 print(f' | loading model from ${args.path}')
 # models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
@@ -88,15 +89,15 @@ test_set_id = np.array(icbhi_id)
 # NOTE: For Covid dataset
 # profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-07-26/22-38-53/checkpoints/profile.pt')
 # profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-07-25/00-11-55/checkpoints/profile.pt')
-profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/profile.pt')
+profiles = torch.load(args.profile_path)
 
 if args.input_file == 'majority_small':
-    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/AandS_2048_128_fold4', '/media/data/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
+    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/majority_small', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
     test_set_id = np.array(maj_id)
 elif args.input_file == 'majority':
-    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/large_2048_128_fold4', '/media/data/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
+    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/majority_clean', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
     test_set_id = np.array(maj_id)
@@ -134,6 +135,15 @@ model.eval()
 model.encoder.eval()
 model.decoder.eval()
 
+# for ids, inputs, labels, lengths in dataloader:
+#     # NOTE: only works for batch size = 1
+#     try:
+#         profile = profiles[ids[0]].to('cuda')
+#     except:
+#         print(ids[0], profiles[ids[0]])
+#         continue
+
+
 for ids, inputs, labels, lengths in dataloader:
     inputs = inputs.to('cuda', dtype=torch.float)
     labels = labels.to('cuda')
@@ -143,7 +153,10 @@ for ids, inputs, labels, lengths in dataloader:
     encoder_out['encoder_out'] = torch.mean(encoder_out['encoder_out'], dim=1)
 
     # NOTE: only works for batch size = 1
-    profile = profiles[ids[0]].to('cuda')
+    try:
+        profile = profiles[ids[0]].to('cuda')
+    except:
+        print(ids[0], profiles[ids[0]])
     profile = profile.unsqueeze(dim=0)
 
     decoder_input = torch.cat((encoder_out['encoder_out'], profile), dim=1)
@@ -160,16 +173,8 @@ for ids, inputs, labels, lengths in dataloader:
     else:
         pred_array.extend(list(outputs.detach().cpu().numpy()[:, 1].squeeze()))
 
-    # #NOTE: For Urban8k
-    # # print("PREDICTION ARRAY SHAPE: ", outputs.detach().cpu().numpy().shape)
-    # pred_array.append(outputs.detach().cpu().numpy().squeeze())
-
     target_array.extend(list(labels.detach().cpu().numpy()))
 
-
-# res['assessment_result'] = pred_array
-
-# res.to_csv('results.csv', index=False)
 
 print(evaluate(pred_array, target_array, args))
 

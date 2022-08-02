@@ -44,7 +44,7 @@ LAYER_TYPE_CHOICES = ChoiceEnum(["transformer", "conformer"])
 @dataclass
 class Wav2Vec2Config(FairseqDataclass):
     num_mel: int = field(
-        default=192, metadata={"help": "number of input frequency dimensions"}
+        default=128, metadata={"help": "number of input frequency dimensions"}
     )
     extractor_mode: EXTRACTOR_MODE_CHOICES = field(
         default="default",

@@ -22,12 +22,12 @@ import numpy as np
 @dataclass
 class CrossEntropyCriterionConfig(FairseqDataclass):
     sentence_avg: bool = II("optimization.sentence_avg")
-    positive_class_weight: int = field(
-        default=1,
-        metadata={
-            "help": "class weight for loss function, old method, not use now"
-        },
-    )
+    # positive_class_weight: int = field(
+    #     default=1,
+    #     metadata={
+    #         "help": "class weight for loss function, old method, not use now"
+    #     },
+    # )
     class_weights: List[float] = field(
         default_factory=lambda : [1],
         metadata={
@@ -83,9 +83,10 @@ class CrossEntropyCriterion(FairseqCriterion):
 
 
         if len(self.class_weights) == 2:
-            raw_predicts = F.softmax(net_output, dim=1).detach().cpu().numpy()
-            if raw_predicts.shape[0] == 1:
-                predicts = [raw_predicts.squeeze()[1]]
+            raw_predicts = outputs[2].detach().cpu().numpy()
+            # In case there is only one input, predicts includes probs for both 0 and 1 class
+            if len(raw_predicts.shape) == 1:
+                predicts = [raw_predicts[1]]
             else:
                 predicts = raw_predicts[:, 1].squeeze().tolist()
             targets = outputs[1].detach().cpu().numpy().tolist()

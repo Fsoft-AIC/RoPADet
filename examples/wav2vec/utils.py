@@ -28,14 +28,21 @@ def compute_metrics(cfs_matrix):
 def get_run(args):
     api = wandb.Api()
 
-    if hasattr(args,'run_id') and args.run_id is not None:
-        # run = api.run(f'snp-robustness/wav2vec2_covid/{args.run_id}')
-        run = api.run(f'tktung/wav2vec2_covid/{args.run_id}')
-    else:
-        runs = api.runs('snp-robustness/wav2vec2_covid')
-        run = runs[0]
+    workspaces = ['wav2vec2_covid', 'wav2vec2_icbhi', 'wav2vec2_covid_profile_self_training', 'wav2vec2_covid_pretrain', 'wav2vec2_icbhi_pretrain']
+    for workspace in workspaces:
+        if hasattr(args,'run_id') and args.run_id is not None:
+            run = api.run(f'snp-robustness/{workspace}/{args.run_id}')
+        elif hasattr(args,'run_name') and args.run_name is not None:
+            runs = api.runs(f'snp-robustness/{workspace}')
+            for curr_run in runs:
+                if curr_run.name == args.run_name:
+                    run = curr_run
+                    break
+        else:
+            runs = api.runs(f'snp-robustness/{workspace}')
+            run = runs[0]
 
-    return run
+        return run
 
 def update_run(run, k, v):
     if (isinstance(run.summary, wandb.old.summary.Summary) and k not in run.summary):
@@ -56,15 +63,6 @@ def evaluate(ensem_preds, targets, args):
       Returns:
         - None
     """
-    best_th = 0
-    best_score = 0
-
-    # for th in np.arange(0.0, 0.6, 0.01):
-    #     pred = (ensem_preds > th).astype(int)
-    #     score = f1_score(targets, pred)
-    #     if score > best_score:
-    #         best_th = th
-    #         best_score = score
     f = open('output.txt', 'a')
 
     print('DATASET: ', args.input_file, file=f)
@@ -75,10 +73,6 @@ def evaluate(ensem_preds, targets, args):
 
     auc = roc_auc_score(targets, ensem_preds)
     print(f"\nAUC score: {auc:12.4f}", file=f)
-    # print(f"Best threshold {best_th:12.4f}")
-
-    # preds = (ensem_preds > best_th).astype(int)
-    # print(classification_report(targets, preds, digits=3))
 
     preds = (np.array(ensem_preds) > 0.5).astype(int)
 
@@ -98,7 +92,7 @@ def evaluate(ensem_preds, targets, args):
     print('\n=============', file=f)
     accuracy1=(cm1[0,0]+cm1[1,1])/total1
     print (f'Accuracy    : {accuracy1:12.4f}', file=f)
-    brier_score = brier_score_loss(targets, preds)
+    brier_score = brier_score_loss(targets, ensem_preds)
     print(f'Brier Score : {brier_score:12.4f}', file=f)
     print('\n', file=f)
 
@@ -160,11 +154,15 @@ def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test'], 
                         file_path, _, _ = line.split('\t')
                         profile_id = file_path[file_path.rfind('/') + 1: -17]
                     profile_ids.append(profile_id)
+                else:
                     file_path, _, _ = line.split('\t')
                 spec = np.load(os.path.join(orig_dir, file_path))
                 feats.append(spec)
                 labels.append(int(label))
 
+    if profiling:
+        return feats, labels, profile_ids
+    else:
         return feats, labels
 
 
