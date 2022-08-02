@@ -18,7 +18,7 @@ parser.add_argument('-p', '--profile_path', type=str, required=True)
 args = options.parse_args_and_arch(parser)
 
 args.run = get_run(args)
-args.path = f'/media/data/tungtk2/fairseq/outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
+args.path = f'outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
 
 # Setup task
 task = tasks.setup_task(args)
@@ -28,7 +28,7 @@ task.cfg.profiles_path = args.profile_path
 # Load model
 print(f' | loading model from ${args.path}')
 # models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path],  arg_overrides={'data': '/media/data/tungtk2/fairseq/data/orig_2048_128_aicovidvn_fold4', 'w2v_path': '/media/data/tungtk2/fairseq/outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'}, task=task)
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path],  arg_overrides={'data': 'data/orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'}, task=task)
 model = models[0].cuda()
 
 print(model)
@@ -76,7 +76,7 @@ print(model)
 
 '''
 # NOTE: For ICBHI dataset
-profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-06-22/14-26-59/checkpoints/profile.pt')
+profiles = torch.load('outputs/2022-06-22/14-26-59/checkpoints/profile.pt')
 icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32_official_unnormalized_unresized_augmented', '/media/SSD/tungtk2/RespireNet', splits=['test'], profiling=True)
 # profiles = torch.load('/media/SSD/tungtk2/fairseq/outputs/2022-05-20/22-37-59/checkpoints/profile.pt')
 # icbhi_inp, icbhi_out, icbhi_id = load_fairseq_dataset('/media/SSD/tungtk2/fairseq/data/ICBHI_256_32', '/media/SSD/tungtk2/RespireNet', splits=['test'], profiling=True)
@@ -87,43 +87,25 @@ test_set_id = np.array(icbhi_id)
 '''
 
 # NOTE: For Covid dataset
-# profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-07-26/22-38-53/checkpoints/profile.pt')
-# profiles = torch.load('/media/data/tungtk2/fairseq/outputs/2022-07-25/00-11-55/checkpoints/profile.pt')
+# profiles = torch.load('outputs/2022-07-26/22-38-53/checkpoints/profile.pt')
+# profiles = torch.load('outputs/2022-07-25/00-11-55/checkpoints/profile.pt')
 profiles = torch.load(args.profile_path)
 
 if args.input_file == 'majority_small':
-    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/majority_small', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
+    maj_inp, maj_out, maj_id = load_fairseq_dataset('data/majority_small', '../aicv115m_api_template/data', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
     test_set_id = np.array(maj_id)
 elif args.input_file == 'majority':
-    maj_inp, maj_out, maj_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/majority_clean', '/media/data/tungtk2/aicv115m_api_template/data', ['test'], profiling=True)
+    maj_inp, maj_out, maj_id = load_fairseq_dataset('data/majority_clean', '../aicv115m_api_template/data', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
     test_set_id = np.array(maj_id)
 elif args.input_file == 'minority':
-    min_inp, min_out, min_id = load_fairseq_dataset('/media/data/tungtk2/fairseq/data/profile_2048_128', '/media/data/tungtk2/aicv115m_api_template/', ['test'], profiling=True)
+    min_inp, min_out, min_id = load_fairseq_dataset('data/profile_2048_128', '../aicv115m_api_template/', ['test'], profiling=True)
     test_set_inp = [*min_inp]
     test_set_out = np.array(min_out)
     test_set_id = np.array(min_id)
-
-# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/assets/df_min.csv')
-# aicovidvn_new_min_inp, aicovidvn_new_min_out, aicovidvn_new_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/aicv_new/', 'label', 'id')
-
-# X = pd.read_csv('/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/df_min.csv')
-# sounddr_min_inp, sounddr_min_out, sounddr_min_id = load_dataset(X[X['fold'] == 1], 'file_path', '/host/ubuntu/tungtk2/aicovid/aicv115m_api_template/data/sounddr/', 'label', 'id')
-
-# test_set_inp = [*sounddr_min_inp, *aicovidvn_new_min_inp]
-# test_set_out = np.concatenate((sounddr_min_out, aicovidvn_new_min_out))
-# test_set_id = np.concatenate((sounddr_min_id, aicovidvn_new_min_id))
-
-# # NOTE: For urban8k
-# X = pd.read_csv('/media/SSD/tungtk2/UrbanSound8K/metadata/UrbanSound8K.csv')
-# X['file_path'] = X.apply(lambda x: f"/media/SSD/tungtk2/UrbanSound8K/audio/fold{ x['fold'] }/{ x['slice_file_name'] }", axis=1)
-# urban8k_test_set_inp, urban8k_test_set_out = load_dataset(X[X['fold'] == 10], 'file_path', '', 'classID')
-
-# test_set_inp = [*urban8k_test_set_inp]
-# test_set_out = np.array(urban8k_test_set_out)
 
 
 test_dataset = ProfileDataset(test_set_id, test_set_inp, test_set_out)
@@ -177,25 +159,3 @@ for ids, inputs, labels, lengths in dataloader:
 
 
 print(evaluate(pred_array, target_array, args))
-
-'''
-def get_score(hits, counts):
-    se = (hits[1] + hits[2] + hits[3]) / (counts[1] + counts[2] + counts[3])
-    sp = hits[0] / counts[0]
-    print(f"SENSE: {se:.4f}")
-    print(f"SPEC: {sp:.4f}")
-    sc = (se+sp) / 2.0
-    return sc
-
-class_hits = [0.0, 0.0, 0.0, 0.0] # normal, crackle, wheeze, both
-class_counts = [0.0, 0.0, 0.0+1e-7, 0.0+1e-7] # normal, crackle, wheeze, both
-for idx in range(len(target_array)):
-    class_counts[target_array[idx]] += 1.0
-    if pred_array[idx] == target_array[idx]:
-        class_hits[target_array[idx]] += 1.0
-
-from sklearn.metrics import confusion_matrix
-print(class_counts)
-print(confusion_matrix(target_array, pred_array))
-print(f"{get_score(class_hits, class_counts):.4f}")
-'''

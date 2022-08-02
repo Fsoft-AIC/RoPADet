@@ -30,21 +30,22 @@ def compute_metrics(cfs_matrix):
 def get_run(args):
     api = wandb.Api()
 
-    workspaces = ['wav2vec2_covid', 'wav2vec2_icbhi', 'wav2vec2_covid_profile_self_training', 'wav2vec2_covid_pretrain', 'wav2vec2_icbhi_pretrain']
-    for workspace in workspaces:
-        if hasattr(args,'run_id') and args.run_id is not None:
-            run = api.run(f'snp-robustness/{workspace}/{args.run_id}')
-        elif hasattr(args,'run_name') and args.run_name is not None:
-            runs = api.runs(f'snp-robustness/{workspace}')
-            for curr_run in runs:
-                if curr_run.name == args.run_name:
-                    run = curr_run
-                    break
-        else:
-            runs = api.runs(f'snp-robustness/{workspace}')
-            run = runs[0]
+    # workspaces = ['wav2vec2_covid', 'wav2vec2_icbhi', 'wav2vec2_covid_profile_self_training', 'wav2vec2_covid_pretrain', 'wav2vec2_icbhi_pretrain']
+    # for workspace in workspaces:
+    workspace = args.workspace
+    if hasattr(args,'run_id') and args.run_id is not None:
+        run = api.run(f'snp-robustness/{workspace}/{args.run_id}')
+    elif hasattr(args,'run_name') and args.run_name is not None:
+        runs = api.runs(f'snp-robustness/{workspace}')
+        for curr_run in runs:
+            if curr_run.name == args.run_name:
+                run = curr_run
+                break
+    else:
+        runs = api.runs(f'snp-robustness/{workspace}')
+        run = runs[0]
 
-        return run
+    return run
 
 def update_run(run, k, v):
     if (isinstance(run.summary, wandb.old.summary.Summary) and k not in run.summary):
