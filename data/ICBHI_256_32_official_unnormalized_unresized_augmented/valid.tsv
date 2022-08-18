@@ -1,4 +1,4 @@
-/media/SSD/tungtk2/RespireNet
+../../../spectrum_data/
 official_unnorm_unresized_augmented/test/101_1b1_Al_sc_Meditron_0_0.npy	192	182	101
 official_unnorm_unresized_augmented/test/101_1b1_Al_sc_Meditron_1_0.npy	192	624	101
 official_unnorm_unresized_augmented/test/101_1b1_Al_sc_Meditron_2_0.npy	192	482	101

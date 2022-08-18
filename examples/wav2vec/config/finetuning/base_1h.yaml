@@ -13,7 +13,6 @@ checkpoint:
   no_epoch_checkpoints: true
   best_checkpoint_metric: auc
   maximize_best_checkpoint_metric: true
-  # restore_file: /media/SSD/tungtk2/fairseq/outputs/2022-03-22/13-57-49/checkpoints/checkpoint_last.pt
 
 task:
   _name: audio_finetuning

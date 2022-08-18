@@ -12,6 +12,7 @@ parser.add_argument('-i', '--input_file', type=str, required=True)
 parser.add_argument('-r', '--run_id', type=str, required=False)
 parser.add_argument('-rn', '--run_name', type=str, required=False)
 parser.add_argument('-w', '--workspace', type=str, required=True)
+parser.add_argument('-u', '--user_name', type=str, required=True)
 args = options.parse_args_and_arch(parser)
 
 args.run = get_run(args)
@@ -22,39 +23,29 @@ args.path = f'outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
 task = tasks.setup_task(args)
 # Load model
 print(f' | loading model from ${args.path}')
-# models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': '/media/SSD/tungtk2/fairseq/data/orig_2048_128', 'w2v_path': '/media/SSD/tungtk2/fairseq/outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'data/orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
-# models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'data/ICBHI_256_32_respirenetsplit_unnormalized_unresized_augmented_fold4', 'w2v_path': '/media/Z/tungtk2/fairseq/outputs/2022-06-22/14-26-59/checkpoints/checkpoint_best.pt'})
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
 model = models[0].cuda()
 
 print(model)
 
 if args.input_file == 'majority_small':
-    maj_inp, maj_out, _ = load_fairseq_dataset('data/majority_small', '../aicv115m_api_template/data', ['test'], profiling=True)
+    maj_inp, maj_out, _ = load_fairseq_dataset('majority_small', 'spectrum_', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
 elif args.input_file == 'majority':
-    maj_inp, maj_out, _ = load_fairseq_dataset('data/majority_clean', '../aicv115m_api_template/data', ['test'], profiling=True)
+    maj_inp, maj_out, _ = load_fairseq_dataset('majority_clean', 'spectrum_', ['test'], profiling=True)
     test_set_inp = [*maj_inp]
     test_set_out = np.array(maj_out)
 elif args.input_file == 'minority':
-    min_inp, min_out, _ = load_fairseq_dataset('data/profile_2048_128', '../aicv115m_api_template/', ['test'], profiling=True)
+    min_inp, min_out, _ = load_fairseq_dataset('profile_2048_128', 'spectrum_', ['test'], profiling=True)
     test_set_inp = [*min_inp]
     test_set_out = np.array(min_out)
-elif args.input_file.startswith('w2g_a2'):
-    w2g_a2_inp, w2g_a2_out = load_fairseq_dataset(f'data/{args.input_file}', '../aicv115m_api_template/', ['test'])
-    test_set_inp = [*w2g_a2_inp]
-    test_set_out = np.array(w2g_a2_out)
-elif args.input_file.startswith('w2g_a4'):
-    w2g_a4_inp, w2g_a4_out = load_fairseq_dataset(f'data/{args.input_file}', '../aicv115m_api_template/', ['test'])
-    test_set_inp = [*w2g_a4_inp]
-    test_set_out = np.array(w2g_a4_out)
 elif args.input_file.startswith('ICBHI'):
-    icbhi_inp, icbhi_out, _ = load_fairseq_dataset(f'data/{args.input_file}', '../RespireNet', splits=['valid'], profiling=True)
+    icbhi_inp, icbhi_out, _ = load_fairseq_dataset(f'{args.input_file}', 'spectrum_', splits=['valid'], profiling=True)
     test_set_inp = [*icbhi_inp]
     test_set_out = np.array(icbhi_out)
 else:
-    inp, out = load_fairseq_dataset(f'data/{args.input_file}', '../aicv115m_api_template', splits=['test'])
+    inp, out = load_fairseq_dataset(f'{args.input_file}', 'spectrum_', splits=['test'])
     test_set_inp = [*inp]
     test_set_out = np.array(out)
 
@@ -82,7 +73,7 @@ for inputs, labels, lengths in dataloader:
     outputs = model.decoder(encoder_out['encoder_out'])
     outputs = F.softmax(outputs, dim=1)
 
-    if args.input_file.startswith("w2g_a4"):
+    if args.input_file.startswith("3class"):
         predicts = outputs.detach().cpu().numpy().ravel()
         raw_targets = labels.detach().cpu().numpy()
         targets =  np.zeros((raw_targets.size, 3))
@@ -101,7 +92,7 @@ for inputs, labels, lengths in dataloader:
         target_array.extend(list(labels.detach().cpu().numpy()))
 
 
-if args.input_file.startswith("w2g_a4"):
+if args.input_file.startswith("3class"):
     ovr_evaluate(pred_array, target_array, args)
 elif args.input_file.startswith('ICBHI'):
     icbhi_evaluate(pred_array, target_array, args)

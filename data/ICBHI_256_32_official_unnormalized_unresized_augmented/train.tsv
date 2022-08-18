@@ -1,4 +1,4 @@
-/media/SSD/tungtk2/RespireNet
+../../../spectrum_data
 official_unnorm_unresized_augmented/train/103_2b2_Ar_mc_LittC2SE_0_2_0.npy	192	963	103
 official_unnorm_unresized_augmented/train/103_2b2_Ar_mc_LittC2SE_0_2_1.npy	192	940	103
 official_unnorm_unresized_augmented/train/103_2b2_Ar_mc_LittC2SE_0_2_2.npy	192	952	103

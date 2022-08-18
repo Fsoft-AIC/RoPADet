@@ -1,1 +1,0 @@
-for i in {1..10000}; do timeout 24h fairseq-hydra-train task.data=/media/SSD/tungtk2/fairseq/data//ICBHI_256_32_unnormalized_log_augmented model.w2v_path=/media/SSD/tungtk2/fairseq/outputs/2022-05-28/07-32-46/checkpoints/checkpoint_best.pt optimization.lr=[1e-4] --config-dir examples/wav2vec/config/finetuning --config-name icbhi_adam; done

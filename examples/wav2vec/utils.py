@@ -30,19 +30,18 @@ def compute_metrics(cfs_matrix):
 def get_run(args):
     api = wandb.Api()
 
-    # workspaces = ['wav2vec2_covid', 'wav2vec2_icbhi', 'wav2vec2_covid_profile_self_training', 'wav2vec2_covid_pretrain', 'wav2vec2_icbhi_pretrain']
-    # for workspace in workspaces:
     workspace = args.workspace
+    user_name = args.user_name
     if hasattr(args,'run_id') and args.run_id is not None:
-        run = api.run(f'snp-robustness/{workspace}/{args.run_id}')
+        run = api.run(f'{user_name}/{workspace}/{args.run_id}')
     elif hasattr(args,'run_name') and args.run_name is not None:
-        runs = api.runs(f'snp-robustness/{workspace}')
+        runs = api.runs(f'{user_name}/{workspace}')
         for curr_run in runs:
             if curr_run.name == args.run_name:
                 run = curr_run
                 break
     else:
-        runs = api.runs(f'snp-robustness/{workspace}')
+        runs = api.runs(f'{user_name}/{workspace}')
         run = runs[0]
 
     return run
@@ -208,34 +207,6 @@ def load_fairseq_dataset(dir_path, orig_dir, splits=['train', 'valid', 'test'], 
                 spec = np.load(os.path.join(orig_dir, file_path))
                 feats.append(spec)
                 labels.append(int(label))
-
-    if profiling:
-        return feats, labels, profile_ids
-    else:
-        return feats, labels
-
-def load_fairseq_dataset_clean(dir_path, orig_dir, splits=['train', 'valid', 'test'], profiling=False):
-    '''
-    dir_path: directory to fairseq meta data files
-    orig_dir: original directory that stored the spectrum
-    '''
-    cleaning_profiles = ['bad_cough_2021-08-18T08:43:58.113Z', 'good_cough_2021-08-02T02:20:03.507Z', 'good_cough_2021-09-06T12:52:43.247Z', 'good_cough_2021-09-06T05:42:10.955Z', 'good_cough_2021-09-23T09:07:09.841Z', 'good_cough_2021-09-12T02:55:10.157Z', 'good_cough_2021-08-20T16:27:48.296Z', 'isofh_undefined-1637216183.504766', 'isofh_undefined-1642222653.2569923', 'isofh_undefined-1645671757.060289', 'isofh_undefined-1645681104.1764894', 'isofh_undefined-1645758127.0673249', 'isofh_undefined-1647192523.4555895', 'isofh_undefined-1636079123.4377832', 'isofh_undefined-1644327539.345447', 'isofh_undefined-1633924005.3468943', 'isofh_undefined-1636877044.0882564', 'isofh_undefined-1636960952.7196362', 'isofh_undefined-1644507712.6994777', 'isofh_undefined-1644558767.9239337', 'isofh_undefined-1645000102.4192054', 'isofh_undefined-1645152964.4192548', 'isofh_undefined-1634131789.5582144', 'isofh_undefined-1634282003.54855', 'isofh_undefined-1647307289.5514479', 'isofh_undefined-1639401508.6477778', 'isofh_undefined-1634905349.1400065', 'isofh_undefined-1646214697.4001377', 'isofh_undefined-1646272200.5174289', 'isofh_undefined-1635680127.5080094', 'isofh_undefined-1635719184.5851254']
-    feats = []
-    labels = []
-    profile_ids = []
-    for split in splits:
-        with open(os.path.join(dir_path, f'{split}.tsv')) as f, open(os.path.join(dir_path, f'{split}.label')) as label:
-            for line, label in zip(f.read().split('\n')[1:-1], label.read().split('\n')):
-                if profiling:
-                    file_path, _, _, profile_id = line.split('\t')
-                    if profile_id in cleaning_profiles:
-                        profile_ids.append(profile_id)
-                else:
-                    file_path, _, _ = line.split('\t')
-                if profile_id in cleaning_profiles:
-                    spec = np.load(os.path.join(orig_dir, file_path))
-                    feats.append(spec)
-                    labels.append(int(label))
 
     if profiling:
         return feats, labels, profile_ids
