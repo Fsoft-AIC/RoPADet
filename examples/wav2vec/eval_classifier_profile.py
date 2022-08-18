@@ -29,7 +29,7 @@ task.cfg.profiling = True
 task.cfg.profiles_path = args.profile_path
 # Load model
 print(f' | loading model from ${args.path}')
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path],  arg_overrides={'data': 'orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'}, task=task)
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path],  arg_overrides={'data': 'orig_2048_128_coswara_fold4', 'w2v_path': 'outputs/2022-04-19/21-32-58/checkpoints/checkpoint_best.pt'}, task=task)
 model = models[0].cuda()
 
 print(model)

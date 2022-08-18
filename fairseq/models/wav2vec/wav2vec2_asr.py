@@ -360,10 +360,7 @@ class Wav2Vec2Seq2SeqModel(BaseFairseqModel):
 
         decoder = cls.build_decoder(cfg, task)
         if task.cfg.profiling:
-            try:
-                users_profile = torch.load(task.cfg.profiles_path)
-            except Exception as _:
-                users_profile = torch.load(task.cfg.profiles_path.replace('SSD', 'data'))
+            users_profile = torch.load(task.cfg.profiles_path)
         else:
             users_profile = None
 
@@ -524,10 +521,7 @@ class Wav2VecEncoder(FairseqEncoder):
         }
 
         if cfg.w2v_args is None:
-            try:
-                state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path, arg_overrides)
-            except Exception as _:
-                state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path.replace('SSD', 'data'), arg_overrides)
+            state = checkpoint_utils.load_checkpoint_to_cpu(cfg.w2v_path, arg_overrides)
             w2v_args = state.get("cfg", None)
             if w2v_args is None:
                 w2v_args = convert_namespace_to_omegaconf(state["args"])

@@ -23,7 +23,7 @@ args.path = f'outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
 task = tasks.setup_task(args)
 # Load model
 print(f' | loading model from ${args.path}')
-models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'orig_2048_128_aicovidvn_fold4', 'w2v_path': 'outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
+models, _model_args = checkpoint_utils.load_model_ensemble([args.path], arg_overrides={'data': 'orig_2048_128_coswara_fold4', 'w2v_path': 'outputs/2022-03-07/08-30-20/checkpoints/checkpoint_best.pt'})
 model = models[0].cuda()
 
 print(model)
