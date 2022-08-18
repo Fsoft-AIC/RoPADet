@@ -6,7 +6,7 @@
 
 ## About this implementation
 
-This implementation is based on the fairseq toolkit by meta.
+This implementation is based on the [fairseq toolkit](https://github.com/facebookresearch/fairseq).
 Our main source code was written in the following directory:
 + [Profile Generation and Model Evaluation](examples/wav2vec)
 + [Spectrum Data Loading](fairseq/data)
