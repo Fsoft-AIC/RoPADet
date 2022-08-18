@@ -1,0 +1,78 @@
+# @package _group_
+
+common:
+  fp16: false
+  log_format: json
+  log_interval: 200
+  wandb_project: wav2vec2_covid
+
+checkpoint:
+  save_interval: 1
+  save_interval_updates: 1000
+  keep_interval_updates: 1
+  no_epoch_checkpoints: true
+  best_checkpoint_metric: auc
+  maximize_best_checkpoint_metric: true
+  # restore_file: /media/SSD/tungtk2/fairseq/outputs/2022-03-22/13-57-49/checkpoints/checkpoint_last.pt
+
+task:
+  _name: audio_finetuning
+  data: ???
+  normalize: false
+  labels: label
+  profiling: false
+  profiles_path: None
+  auto_encoder: false
+
+dataset:
+  num_workers: 6
+  batch_size: 64
+  skip_invalid_size_inputs_valid_test: true
+  # validate_after_updates: 50
+  # validate_interval: 1000
+  valid_subset: valid
+
+distributed_training:
+  ddp_backend: legacy_ddp
+  distributed_world_size: 1
+
+criterion:
+  _name: cross_entropy
+  # zero_infinity: true
+  # class_weights: [3.8, 0.6]
+  class_weights: [1.0, 1.0]
+  ovr_onehot: false
+
+optimization:
+  max_update: 13000
+  lr: [1e-4]
+  sentence_avg: true
+  update_freq: [1]
+  max_epoch: 100
+
+optimizer:
+  _name: adam
+  adam_betas: (0.9,0.98)
+  adam_eps: 1e-08
+  weight_decay: 4e-3
+
+lr_scheduler:
+  _name: tri_stage
+  phase_ratio: [0.1, 0.4, 0.5]
+  final_lr_scale: 0.05
+  # _name: fixed
+
+model:
+  _name: wav2vec_seq2seq
+  w2v_path: ???
+  no_pretrained_weights: true
+  apply_mask: true
+  mask_prob: 0.3
+  mask_channel_prob: 0.25
+  mask_channel_length: 32
+  layerdrop: 0.1
+  activation_dropout: 0.1
+  feature_grad_mult: 1
+  freeze_finetune_updates: 0
+  final_dropout: 0.1
+  clf_output_dim: 2

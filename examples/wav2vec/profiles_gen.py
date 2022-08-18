@@ -10,15 +10,14 @@ from utils import load_fairseq_dataset, ProfileDataset, profile_collate_fn, get_
 # Parse command-line arguments for generation
 parser = options.get_generation_parser(default_task='stft_audio_pretraining')
 parser.add_argument('-r', '--run_id', type=str, required=False)
-parser.add_argument('-o', '--orig_profile', type=str, required=True)
-parser.add_argument('-w', '--workspace', type=str, required=True)
-parser.add_argument('-u', '--user_name', type=str, required=True)
+parser.add_argument('-o', '--orig_profile', type=str, required=False)
+parser.add_argument('-w', '--workspace', type=str, required=False)
+parser.add_argument('-u', '--user_name', type=str, required=False)
 args = options.parse_args_and_arch(parser)
 
 if args.path is None:
     args.run = get_run(args)
     args.path = f'outputs/{args.run.name}/checkpoints/checkpoint_best.pt'
-
 
 # Setup task
 task = tasks.setup_task(args)
@@ -89,7 +88,10 @@ print(count)
 
 
 
-SAVE_PATH = f'outputs/profile_all_{args.run.name}.pt'
+if args.run is not None and args.run.name is not None:
+    SAVE_PATH = f'outputs/profile_all_{args.run.name}.pt'
+else:
+    SAVE_PATH = args.path[:args.path.rfind('/')] + '/profile_all.pt'
 print("Saving profiles to: ", SAVE_PATH)
 
 torch.save(profiles, SAVE_PATH)

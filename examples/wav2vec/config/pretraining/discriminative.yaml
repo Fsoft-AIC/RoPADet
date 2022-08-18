@@ -4,7 +4,7 @@ common:
   fp16: true
   log_format: json
   log_interval: 200
-  wandb_project: wav2vec2_icbhi_pretrain
+  wandb_project: ???
 
 checkpoint:
   save_interval_updates: 25000
@@ -16,7 +16,7 @@ task:
   data: ???
   max_sample_size: 5000
   min_sample_size: 100
-  num_mels: 192
+  num_mels: 128
   normalize: false
   enable_padding: true
 
@@ -55,17 +55,17 @@ model:
   quantize_targets: true
   final_dim: 256
   encoder_layerdrop: 0.05
-  dropout_input: 0.3
-  dropout_features: 0.3
+  dropout_input: 0.1
+  dropout_features: 0.1
   feature_grad_mult: 0.1
   encoder_embed_dim: 256
   encoder_ffn_embed_dim: 512
   encoder_layers: 2
   encoder_attention_heads: 2
-  conv_feature_layers: "[(512, 5, 1, 1)] + [(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
-  num_negatives: 0
+  conv_feature_layers: "[(512, 5, 1, 2)] + [(512, 5, 2, 2)] + [(256, 5, 4, 2)]"
+  num_negatives: 20
   negatives_from_everywhere: true
-  cross_sample_negatives: 100
+  cross_sample_negatives: 80
 
   # conv_feature_layers: "[(128, 3, 1, 1)] + [(128, 3, 1, 2)] + [(128, 3, 1, 1)] + [(192, 3, 2, 1)] + [(192, 3, 2, 2)] + [(192, 3, 2, 1)] + [(256, 3, 2, 1)] + [(256, 3, 4, 2)] + [(256, 3, 2, 1)]"
   # conv_feature_layers: "[(192, 3, 1, 1)] + [(192, 3, 1, 2)] + [(192, 3, 1, 1)] + [(256, 3, 2, 1)] + [(256, 3, 2, 2)] + [(256, 3, 2, 1)] + [(384, 3, 2, 1)] + [(384, 3, 4, 2)] + [(384, 3, 2, 1)]"
