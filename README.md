@@ -33,47 +33,47 @@ python gen_spectrum.py --metadata_path=$meta_dir_path --profile=$generate_user_i
 
 Downstream task pre-training:
 ```
-fairseq-hydra-train task.data=$pre-train_data --config-dir examples/wav2vec/config/pretraining --config-name general_pretrain
+fairseq-hydra-train task.data=$pre-train_data --config-dir examples/RoPADet/config/pretraining --config-name general_pretrain
 ```
 
 Profile encoder pre-training:
 ```
-fairseq-hydra-train task.data=$pre-train_data --config-dir examples/wav2vec/config/pretraining --config-name discriminative
+fairseq-hydra-train task.data=$pre-train_data --config-dir examples/RoPADet/config/pretraining --config-name discriminative
 ```
 
 ### Profile encoding:
 
 ```
-python examples/wav2vec/profiles_gen.py data/ --path $model_path
+python examples/RoPADet/profiles_gen.py data/ --path $model_path
 ```
 
 ### Self-training:
 
 In each iteration, run:
 ```
-python examples/wav2vec/profiles_gen.py data/ --path $teacher_path; CUDA_VISIBLE_DEVICES="3" fairseq-hydra-train task.data=$self-train_data task.profiles_path=$teacher_profile checkpoint.finetune_from_model=$pre-trained_model --config-dir examples/wav2vec/config/finetuning --config-name profile_self_training
+python examples/RoPADet/profiles_gen.py data/ --path $teacher_path; CUDA_VISIBLE_DEVICES="3" fairseq-hydra-train task.data=$self-train_data task.profiles_path=$teacher_profile checkpoint.finetune_from_model=$pre-trained_model --config-dir examples/RoPADet/config/finetuning --config-name profile_self_training
 ```
 
 ### Fine-tuning
 
 Without personalization:
 ```
-fairseq-hydra-train task.data=$meta_dir_path model.w2v_path=pretrained_model --config-dir examples/wav2vec/config/finetuning --config-name without_profile
+fairseq-hydra-train task.data=$meta_dir_path model.w2v_path=pretrained_model --config-dir examples/RoPADet/config/finetuning --config-name without_profile
 ```
 
 With personalization:
 ```
-fairseq-hydra-train task.data=$meta_dir_path model.w2v_path=pretrained_model task.profiling=True task.profiles_path=$profile_path --config-dir examples/wav2vec/config/finetuning --config-name with_profile
+fairseq-hydra-train task.data=$meta_dir_path model.w2v_path=pretrained_model task.profiling=True task.profiles_path=$profile_path --config-dir examples/RoPADet/config/finetuning --config-name with_profile
 ```
 
 ## Evaluation
 
 Model without personalization:
 ```
-python examples/wav2vec/eval_classifier.py data --labels label --input_file $meta_dir_path
+python examples/RoPADet/eval_classifier.py data --labels label --input_file $meta_dir_path
 ```
 
 Model with personalization:
 ```
-python examples/wav2vec/eval_classifier_profile.py data --labels label --input_file $meta_dir_path --profile_path $profile_path
+python examples/RoPADet/eval_classifier_profile.py data --labels label --input_file $meta_dir_path --profile_path $profile_path
 ```
