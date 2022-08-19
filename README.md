@@ -8,9 +8,9 @@
 
 This implementation is based on the [fairseq toolkit](https://github.com/facebookresearch/fairseq).
 Our main source code was written in the following directory:
-+ [Profile Generation and Model Evaluation](examples/wav2vec)
++ [Profile Generation and Model Evaluation](examples/RoPADet)
 + [Spectrum Data Loading](fairseq/data)
-+ [Model Personalization and Implementation](fairseq/models/wav2vec)
++ [Model Personalization and Implementation](fairseq/models/RoPADet)
 
 ## Requirements and Installation
 Please follow the instructions to [install the framework](https://github.com/facebookresearch/fairseq#getting-started).
