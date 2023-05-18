@@ -1,8 +1,6 @@
 # Personalization for Robust Voice Pathology Detection Systems in Sound Waves
 
->Artificial intelligence (AI) based voice pathology detection is promising for non-invasive screening and early intervention in healthcare. Nevertheless, AI systems are susceptible covariate shifts in deployment as sound waves have diverse profiles in terms of background noises and human artifacts; moreover, biases in the data and methodological choices can strongly affect the performance in the real-world scenario. Therefore, there is an emerging need for a robust and reliable detection system overcoming these challenges for efficient, cost-effective, and worldwide health monitoring solutions. In this study, we present a novel end-to-end neural model based on Transformers and 1-D temporal convolution neural networks (CNN). The proposed model operates on a fine-grained scale of spectrum representation of sound to effectively extract features from sound data by utilizing the potent capabilities of neural architectures.
->
->Furthermore, we propose a novel personalization strategy to build a profile for each patient or user that first learns user-specific and task-agnostic features, which may pose be harmful as noises for performing the final task, through a contrastive pre-training stage, and then later combine with a feature extractor to perform the downstream tasks. The profiling method does not only improve the overall classification performance but also shines in the setting of covariate shifts that happen between different source and target datasets. Our experimental results on multiple respiratory illnesses classification tasks with real-world datasets show a large margin compared to previous state-of-the-art methods, with up to 2.5\% improvement in AUC score in the scenario of covariate shift with personalization.
+>Automatic voice pathology detection is promising for non-invasive screening and early intervention using sound signals. Nevertheless, existing methods are susceptible to covariate shifts due to background noises, human voice variations, and data selection biases leading to severe performance degradation in real-world scenarios. Hence, we propose a non-invasive framework that contrastively learns personalization from sound waves as a pre-train and predicts  latent-spaced profile features through semi-supervised learning. It allows all subjects from various distributions (e.g., regionality, gender, age) to benefit from personalized predictions for robust voice pathology in a privacy-fulfilled manner. We extensively evaluate the framework on four real-world respiratory illnesses datasets, including Coswara, COUGHVID, ICBHI, and our private dataset - ASound, under multiple covariate shift settings (i.e., cross-dataset), improving up to 4.12% in overall performance.
 
 ## About this implementation
 
@@ -24,11 +22,15 @@ pip install librosa soundfile
 
 ### Preparing data
 
+Create corresponding metadata (including: sample spectrum file path, number of frequency bands, number of time steps, label, profile id (optional)) for your dataset.
+
+Place the meta information inside *data* directory.
+<!-- 
 Download and place data in *raw_data* directory, and create the corresponding metadatas in *data* directory.
 Run:
 ```
 python gen_spectrum.py --metadata_path=$meta_dir_path --profile=$generate_user_id_or_not --num_fft=$window_length --hop_length=$hop_length
-```
+``` -->
 ### Pre-training
 
 Downstream task pre-training:
