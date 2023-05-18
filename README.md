@@ -86,4 +86,4 @@ python examples/RoPADet/eval_classifier_profile.py data --labels label --input_f
 
 ## Data availability
 
-Our private dataset, ASound, is available upon request for research purposes. Please send your information, including details about research usage and affiliations to tungtk@fpt.com.
+Our private dataset, ASound, is available upon request for research purposes. Please send your information, including details about research usage and affiliations to tungtk2@fpt.com.
