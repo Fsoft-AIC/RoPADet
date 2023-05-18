@@ -1,5 +1,9 @@
-# Personalization for Robust Voice Pathology Detection Systems in Sound Waves
+# Personalization for Robust Voice Pathology Detection in Sound Waves
+The official repository for paper: Personalization for Robust Voice Pathology Detection in Sound Waves.
 
+Accepted to the 24th INTERSPEECH Conference.
+
+## Overview
 >Automatic voice pathology detection is promising for non-invasive screening and early intervention using sound signals. Nevertheless, existing methods are susceptible to covariate shifts due to background noises, human voice variations, and data selection biases leading to severe performance degradation in real-world scenarios. Hence, we propose a non-invasive framework that contrastively learns personalization from sound waves as a pre-train and predicts  latent-spaced profile features through semi-supervised learning. It allows all subjects from various distributions (e.g., regionality, gender, age) to benefit from personalized predictions for robust voice pathology in a privacy-fulfilled manner. We extensively evaluate the framework on four real-world respiratory illnesses datasets, including Coswara, COUGHVID, ICBHI, and our private dataset - ASound, under multiple covariate shift settings (i.e., cross-dataset), improving up to 4.12% in overall performance.
 
 ## About this implementation
