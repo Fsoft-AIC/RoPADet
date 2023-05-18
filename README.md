@@ -83,3 +83,7 @@ Model with personalization:
 ```
 python examples/RoPADet/eval_classifier_profile.py data --labels label --input_file $meta_dir_path --profile_path $profile_path
 ```
+
+## Evaluation
+
+Our private dataset, ASound, is available upon request for research purposes. Please send your information, including details about research usage and affiliations to tungtk@fpt.com.
